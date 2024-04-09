@@ -1,0 +1,27 @@
+{% extends "_layout.html" %}
+
+{% block title %}
+  ENDO Pong
+{% endblock %}
+
+
+{% block content %}
+  <h2 class="text-center text-success">Welcome to our legendary Pong game.</h2>
+  <div class="mx-auto mb-4 py-5 bg-light d-flex align-items-center justify-content-center">
+    <button class="btn btn-success" style="font-size:100px;">
+      <a href="/matchmaking" class="text-light text-decoration-none ">LET'S PLAY</a>
+    </button>
+  </div>
+  <div class=" p-2">
+    <h2 class="text-center text-uppercase text-success">Our best players</h2>
+    <div class="d-flex w-100 justify-content-evenly">
+        {% for p in players %}
+          <div class="col w-25 border border-success rounded">
+            <h2 class="text-center text-success">{{ 'name' }}</h2>
+            <p class="text-center text-success">Wins: {{ 'wins' }}</p>
+            <p class="text-center text-success">Loss: {{ 'loss' }}</p>
+          </div>
+        {% endfor %}
+    </div>
+  </div>
+{% endblock %}

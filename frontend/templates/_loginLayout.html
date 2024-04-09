@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>{% block title %}{% endblock %}</title>
+  {% load bootstrap5 %}
+  {% bootstrap_css %}
+  {% bootstrap_javascript %}
+</head>
+<body class="bg-dark">
+  <div class="container">
+      <h1 class="text-center text-success">ENDO Pong</h1>
+      {% block content %}
+      {% endblock %}
+  </div>
+</body>
+</html>

@@ -2,7 +2,9 @@ import Login from "./Login.js"
 
 export default class SignUp extends Login {
     getHtml(){
+        document.title = this.title;
         return `
+        <h1 class="text-center text-success">ENDO Pong</h1>
         <div class="w-100 d-flex justify-content-center">
             <div class="w-50 border border-success rounded px-2 py-3">
                 <h2 class="text-success text-center">Sign Up</h2>

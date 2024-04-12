@@ -5,7 +5,13 @@ export default class Login extends AbstractPage {
         super(title);
         this.isValid = isValid;
     }
+
+    formOnSubmit(event){
+        event.preventDefault();
+    }
+
     getHtml() {
+        document.title = this.title;
         return `
         <h1 class="text-center text-success">ENDO Pong</h1>
         <div class="w-100 d-flex justify-content-center">

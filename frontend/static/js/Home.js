@@ -14,7 +14,10 @@ export default class Home extends AbstractComponent {
         let listHtml = ""
         for (let i in players ){
             listHtml += `
-            <div class="col w-25 border border-success rounded">
+            <div class="col-3 mx-1 border border-success rounded p-3">
+                <div class="d-flex justify-content-center">
+                    <img class="w-75 rounded-circle" src="/static/imgs/avatar_default.png" alt=""/>
+                </div>
                 <h2 class="text-center text-success">${players[i].name}</h2>
                 <p class="text-center text-success">Wins: ${players[i].wins}</p>
                 <p class="text-center text-success">Loss: ${players[i].loss}</p>
@@ -24,15 +27,15 @@ export default class Home extends AbstractComponent {
         return `
             <h2 class="text-center text-success">Welcome to our legendary Pong game.</h2>
             <div class="mx-auto mb-4 py-5 bg-light d-flex align-items-center justify-content-center">
-            <button class="btn btn-success" style="font-size:100px;">
-                <a href="/matchmaking" class="text-light text-decoration-none ">LET'S PLAY</a>
-            </button>
+                <button class="btn btn-success" style="font-size:100px;">
+                    <a href="/matchmaking" class="text-light text-decoration-none ">LET'S PLAY</a>
+                </button>
             </div>
-            <div class=" p-2">
-            <h2 class="text-center text-uppercase text-success">Our best players</h2>
-            <div class="d-flex w-100 justify-content-evenly">
-                ${ listHtml }
-            </div>
+            <div class="p-2">
+                <h2 class="text-center text-uppercase text-success">Our best players</h2>
+                <div class="row d-flex justify-content-center">
+                    ${ listHtml }
+                </div>
             </div>
         `;
     }

@@ -19,23 +19,23 @@ export default class Menu extends AbstractComponent{
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="/">Home</a>
+                    <a class="nav-link ${this.selectedPage === 'home' ? "active" : "" }" aria-current="page" href="/">Home</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link active" aria-current="page" href="/">Users</a>
+                    <a class="nav-link ${this.selectedPage === 'users' ? "active" : "" }" aria-current="page" href="/users">Users</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/matches">Matches</a>
+                    <a class="nav-link ${this.selectedPage === 'matches' ? "active" : "" }" href="/matches">Matches</a>
                 </li>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                     me
                     </a>
-                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                    <li><a class="dropdown-item" href="/profile/me">My Profile</a></li>
+                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown" style="z-index: 1021;">
+                    <li><a class="dropdown-item" href="/profile">My Profile</a></li>
                     <li><a class="dropdown-item" href="/settings">Settings</a></li>
                     <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item" href="#">Logout</a></li>
+                    <li><a class="dropdown-item" href="/login">Logout</a></li>
                     </ul>
                 </li>
                 </ul>

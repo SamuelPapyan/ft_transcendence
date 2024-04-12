@@ -1,6 +1,6 @@
 export default class AbstractPage {
     constructor(title) {
-        document.title = title;
+        this.title = title;
     }
 
     getHtml(){

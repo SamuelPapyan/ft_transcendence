@@ -3,6 +3,19 @@ import Main from "./Main.js";
 import SignUp from "./SignUp.js";
 import Page404 from "./404.js";
 
+const localData = {
+    latestUrlBeforeLogout : "/",
+}
+
+const protectedRoutes = [
+    '/',
+    "/profile",
+    "/settings",
+    "/users",
+    "/matches",
+    "/matchmaking",
+]
+
 const views = {
     "/login": new Login("Login", true),
     "/": new Main("Home", "home", "sampap"),
@@ -26,12 +39,25 @@ const route = (event) => {
 
 function handleLocation() {
     let html;
-    const path = window.location.pathname;
-    if (views[path])
-        html = views[path].getHtml();
-    else
-        html = views[404].getHtml();
-    master.innerHTML = html;
+    let path = window.location.pathname;
+    if ((protectedRoutes.includes(path) && window.localStorage.getItem("token"))
+        || (!protectedRoutes.includes(path) && !window.localStorage.getItem("token"))) {
+        if (views[path]) {
+            html = views[path].getHtml();
+        }
+        else
+            html = views[404].getHtml();
+        master.innerHTML = html;
+        views[path].activateEventHandlers();
+    }
+    else if (!protectedRoutes.includes(path) && window.localStorage.getItem("token")) {
+        window.history.replaceState(null, null, '/');
+        window.location.reload();
+    }
+    else {
+        window.history.replaceState(null, null, '/login');
+        window.location.reload();
+    }
 }
 
 window.onpopstate = handleLocation;

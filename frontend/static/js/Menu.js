@@ -6,6 +6,17 @@ export default class Menu extends AbstractComponent{
         this.selectedPage = selectedPage;
     }
 
+    logout(event){
+        event.preventDefault();
+        window.localStorage.removeItem('token');
+        window.location.reload();
+    }
+
+    activateEventHandlers() {
+        const $logout = document.querySelector('#logout');
+        $logout.addEventListener('click', this.logout);
+    }
+
     getHtml() {
         return `
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
@@ -35,7 +46,7 @@ export default class Menu extends AbstractComponent{
                     <li><a class="dropdown-item" href="/profile">My Profile</a></li>
                     <li><a class="dropdown-item" href="/settings">Settings</a></li>
                     <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item" href="/login">Logout</a></li>
+                    <li><a class="dropdown-item" id="logout" href="/login">Logout</a></li>
                     </ul>
                 </li>
                 </ul>

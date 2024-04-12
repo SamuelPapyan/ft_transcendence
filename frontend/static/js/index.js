@@ -31,7 +31,6 @@ function handleLocation() {
         html = views[path].getHtml();
     else
         html = views[404].getHtml();
-    console.log(html);
     master.innerHTML = html;
 }
 

@@ -7,25 +7,42 @@ const localData = {
     latestUrlBeforeLogout : "/",
 }
 
-const protectedRoutes = [
-    '/',
-    "/profile",
-    "/settings",
-    "/users",
-    "/matches",
-    "/matchmaking",
-]
-
-const views = {
-    "/login": new Login("Login", true),
-    "/": new Main("Home", "home", "sampap"),
-    "/signup": new SignUp("Sign Up", true),
-    "/profile": new Main("Profile", "profile", "sampap"),
-    "/settings": new Main("Settings", "settings", "sampap"),
-    "/users" : new Main("Users", "users", "sampap"),
-    "/matches" : new Main("Matches", "matches", "sampap"),
-    "/matchmaking" : new Main("Matchmaking", "matchmaking", "sampap"),
-    404: new Page404("Page not found"),
+const routes = {
+    "/login": {
+        view: new Login("Login", true),
+        protected: false,
+    },
+    "/": {
+        view: new Main("Home", "home", "sampap"),
+        protected: true,
+    },
+    "/signup": {
+        view: new SignUp("Sign Up", true),
+        protected: false,
+    },
+    "/profile": {
+        view: new Main("Profile", "profile", "sampap"),
+        protected: true,
+    },
+    "/settings": {
+        view: new Main("Settings", "settings", "sampap"),
+        protected: true,
+    },
+    "/users" : {
+        view: new Main("Users", "users", "sampap"),
+        protected: true,
+    },
+    "/matches" : {
+        view: new Main("Matches", "matches", "sampap"),
+        protected: true,
+    },
+    "/matchmaking" : { 
+        view: new Main("Matchmaking", "matchmaking", "sampap"),
+        protected: true,
+    },
+    404: {
+        view: new Page404("Page not found"),
+    }
 }
 
 const master = document.getElementById('master');
@@ -38,25 +55,23 @@ const route = (event) => {
 }
 
 function handleLocation() {
-    let html;
-    let path = window.location.pathname;
-    if ((protectedRoutes.includes(path) && window.localStorage.getItem("token"))
-        || (!protectedRoutes.includes(path) && !window.localStorage.getItem("token"))) {
-        if (views[path]) {
-            html = views[path].getHtml();
+    const path = window.location.pathname;
+    if (routes[path]) {
+        if ((routes[path].protected && window.localStorage.getItem("token"))
+            || (!routes[path].protected && !window.localStorage.getItem("token"))) {
+            routes[path].view.render(master);
         }
-        else
-            html = views[404].getHtml();
-        master.innerHTML = html;
-        views[path].activateEventHandlers();
-    }
-    else if (!protectedRoutes.includes(path) && window.localStorage.getItem("token")) {
-        window.history.replaceState(null, null, '/');
-        window.location.reload();
+        else if (!routes[path].protected && window.localStorage.getItem("token")) {
+            window.history.replaceState(null, null, '/');
+            window.location.reload();
+        }
+        else {
+            window.history.replaceState(null, null, '/login');
+            window.location.reload();
+        }
     }
     else {
-        window.history.replaceState(null, null, '/login');
-        window.location.reload();
+        routes[404].view.render(master);
     }
 }
 

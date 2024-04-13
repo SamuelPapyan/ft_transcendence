@@ -1,12 +1,19 @@
 import AbstractPage from "./AbstractPage.js"
+import Menu from "./Menu.js";
 
 export default class Page404 extends AbstractPage {
     constructor(title) {
         super(title);
     }
-    getHtml() {
+
+    render(masterView) {
         document.title = this.title;
+        masterView.innerHTML = this.getHtml();
+    }
+
+    getHtml() {
         return `
+        ${window.localStorage.getItem('token') ? new Menu("404").getHtml() : ""}
         <h1 class="text-center text-success">ENDO Pong</h1>
         <div class="w-100 d-flex justify-content-center">
             <div class="w-50 border border-success rounded px-2 py-3">

@@ -24,7 +24,9 @@ export default class Login extends AbstractPage {
         Login.validateEnter($username.value, $password.value);
     }
 
-    activateEventHandlers() {
+    render(masterView) {
+        document.title = this.title;
+        masterView.innerHTML = this.getHtml();
         if (window.history.state?.username && window.history.state?.password) {
             const $username = document.querySelector('#username');
             const $password = document.querySelector('#password');
@@ -37,7 +39,6 @@ export default class Login extends AbstractPage {
     }
 
     getHtml() {
-        document.title = this.title;
         this.isValid = window.history.state?.isValid ?? true;
         return `
         <h1 class="text-center text-success">ENDO Pong</h1>

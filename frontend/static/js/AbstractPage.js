@@ -3,7 +3,7 @@ export default class AbstractPage {
         this.title = title;
     }
 
-    activateEventHandlers() {
+    render(masterView) {
         
     }
 

@@ -20,8 +20,9 @@ export default class SignUp extends Login {
         SignUp.validateEnter($username.value, $password.value);
     }
 
-    activateEventHandlers() {
-        console.log(window.history.state);
+    render(masterView) {
+        document.title = this.title;
+        masterView.innerHTML = this.getHtml();
         if (window.history.state?.username && window.history.state?.password) {
             const $username = document.querySelector('#username');
             const $password = document.querySelector('#password');
@@ -34,7 +35,6 @@ export default class SignUp extends Login {
     }
 
     getHtml(){
-        document.title = this.title;
         this.isValid = window.history.state?.isValid ?? true;
         return `
         <h1 class="text-center text-success">ENDO Pong</h1>

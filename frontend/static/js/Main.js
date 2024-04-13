@@ -23,15 +23,15 @@ export default class Main extends AbstractPage {
         }
     }
 
-    activateEventHandlers() {
-        console.log("activating");
+    render(masterView) {
+        document.title = this.title;
+        masterView.innerHTML = this.getHtml();
         for (let i in this.components) {
             this.components[i].activateEventHandlers();
         }
     }
 
     getHtml() {
-        document.title = this.title;
         return `
         ${this.components['menu'].getHtml()}
         ${this.components[this.page].getHtml()}

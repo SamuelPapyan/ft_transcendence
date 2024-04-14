@@ -6,6 +6,7 @@ import Settings from "./Settings.js";
 import Users from "./Users.js";
 import Matches from "./Matches.js";
 import Matchmaking from "./Matchmaking.js";
+import Pong from "./Pong.js";
 
 export default class Main extends AbstractPage {
     constructor(title, page, user){
@@ -19,16 +20,16 @@ export default class Main extends AbstractPage {
             'settings': new Settings(this.user),
             'users': new Users(this.user),
             'matches': new Matches(this.user),
-            'matchmaking': new Matchmaking(this.user)
+            'matchmaking': new Matchmaking(this.user),
+            'pong': new Pong(this.user),
         }
     }
 
     render(masterView) {
         document.title = this.title;
         masterView.innerHTML = this.getHtml();
-        for (let i in this.components) {
-            this.components[i].activateEventHandlers();
-        }
+        this.components['menu'].activateEventHandlers();
+        this.components[this.page].activateEventHandlers();
     }
 
     getHtml() {

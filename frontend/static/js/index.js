@@ -40,6 +40,10 @@ const routes = {
         view: new Main("Matchmaking", "matchmaking", "sampap"),
         protected: true,
     },
+    "/pong" : {
+        view: new Main("Pong", "pong", "sampap"),
+        protected: true,
+    },
     404: {
         view: new Page404("Page not found"),
     }

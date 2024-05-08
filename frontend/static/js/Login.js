@@ -1,4 +1,5 @@
 import AbstractPage from "./AbstractPage.js"
+import AuthService from "./services/AuthService.js";
 
 export default class Login extends AbstractPage {
     constructor(title, isValid) {
@@ -7,14 +8,21 @@ export default class Login extends AbstractPage {
     }
 
     static validateEnter(username, password) {
-        if (username.length >= 8 && password.length >= 10) {
-            window.localStorage.setItem("token", "fakeToken");
-            // window.history.pushState(null, null, "/");
-            window.location.assign("/")
-        } else {
-            window.history.replaceState({isValid: false, username: username, password: password}, null, '/login');
-            window.location.reload();
-        }
+        AuthService.login({
+            username: username,
+            password: password,
+        }).then(res=>{
+            if (res.success) {
+                localStorage.setItem('token', res.data);
+                window.location.assign('/');
+            } else {
+                window.history.replaceState({isValid: false, username: username, password: password}, null, '/login');
+                window.location.reload();
+            }
+            
+        }).catch(err=>{
+            console.log(err.message);
+        })
     }
 
     submitForm(event) {

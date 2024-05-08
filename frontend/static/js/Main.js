@@ -7,35 +7,58 @@ import Users from "./Users.js";
 import Matches from "./Matches.js";
 import Matchmaking from "./Matchmaking.js";
 import Pong from "./Pong.js";
+import viewDataHelper from "./viewDataHelper.js";
 
 export default class Main extends AbstractPage {
-    constructor(title, page, user){
+    constructor(title, page){
         super(title);
         this.page = page;
-        this.user = user;
+        this.user = null;
         this.components = {
             'menu': new Menu(this.page),
             'home': new Home(),
-            'profile': new Profile(this.user),
-            'settings': new Settings(this.user),
-            'users': new Users(this.user),
+            'profile': new Profile(),
+            'settings': new Settings(),
+            'users': new Users(),
             'matches': new Matches(this.user),
-            'matchmaking': new Matchmaking(this.user),
+            'matchmaking': new Matchmaking(),
             'pong': new Pong(this.user),
         }
     }
 
-    render(masterView) {
-        document.title = this.title;
-        masterView.innerHTML = this.getHtml();
-        this.components['menu'].activateEventHandlers();
-        this.components[this.page].activateEventHandlers();
+    update(masterView, meta) {
+        for (let i in meta) {
+            this[i] = meta[i]
+        }
+        this.render(masterView);
     }
 
-    getHtml() {
+    render(masterView) {
+        document.title = this.title;
+        this.components['menu'].injectUser(this.user);
+        this.components[this.page].injectUser(this.user);
+        viewDataHelper(this.page).then(res=>{
+            if (res) {
+                const dataSet = {
+                    menu: null
+                }
+                dataSet[this.page] = res;
+                masterView.innerHTML = this.getHtml(dataSet);
+                this.components['menu'].activateEventHandlers();
+                this.components[this.page].activateEventHandlers();
+            } else {
+                console.log("Not OK.");
+            }
+        }).catch(err=>{
+            console.log(err.message);
+            console.log(err);
+        })
+    }
+
+    getHtml(dataSet) {
         return `
-        ${this.components['menu'].getHtml()}
-        ${this.components[this.page].getHtml()}
+        ${this.components['menu'].getHtml(dataSet.menu)}
+        ${this.components[this.page].getHtml(dataSet[this.page])}
         `
     }
 }

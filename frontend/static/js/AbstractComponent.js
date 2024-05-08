@@ -1,11 +1,16 @@
 export default class AbstractComponent{
     constructor() {
+        this.user = null;
     }
 
     activateEventHandlers() {
     }
 
-    getHtml() {
+    injectUser(user){
+        this.user = user;
+    }
+
+    getHtml(data) {
         return ``;
     }
 }

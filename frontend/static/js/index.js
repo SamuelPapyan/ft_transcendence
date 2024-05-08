@@ -2,6 +2,7 @@ import Login from "./Login.js";
 import Main from "./Main.js";
 import SignUp from "./SignUp.js";
 import Page404 from "./404.js";
+import AuthService from "./services/AuthService.js";
 
 const localData = {
     latestUrlBeforeLogout : "/",
@@ -13,7 +14,7 @@ const routes = {
         protected: false,
     },
     "/": {
-        view: new Main("Home", "home", "sampap"),
+        view: new Main("Home", "home"),
         protected: true,
     },
     "/signup": {
@@ -21,27 +22,27 @@ const routes = {
         protected: false,
     },
     "/profile": {
-        view: new Main("Profile", "profile", "sampap"),
+        view: new Main("Profile", "profile"),
         protected: true,
     },
     "/settings": {
-        view: new Main("Settings", "settings", "sampap"),
+        view: new Main("Settings", "settings"),
         protected: true,
     },
     "/users" : {
-        view: new Main("Users", "users", "sampap"),
+        view: new Main("Users", "users"),
         protected: true,
     },
     "/matches" : {
-        view: new Main("Matches", "matches", "sampap"),
+        view: new Main("Matches", "matches"),
         protected: true,
     },
     "/matchmaking" : { 
-        view: new Main("Matchmaking", "matchmaking", "sampap"),
+        view: new Main("Matchmaking", "matchmaking"),
         protected: true,
     },
     "/pong" : {
-        view: new Main("Pong", "pong", "sampap"),
+        view: new Main("Pong", "pong"),
         protected: true,
     },
     404: {
@@ -60,23 +61,44 @@ const route = (event) => {
 
 function handleLocation() {
     const path = window.location.pathname;
-    if (routes[path]) {
-        if ((routes[path].protected && window.localStorage.getItem("token"))
-            || (!routes[path].protected && !window.localStorage.getItem("token"))) {
-            routes[path].view.render(master);
+    AuthService.getProfile().then(res=>{
+        if (res.data) {
+            if (routes[path]) {
+                if (routes[path].protected) {
+                    routes[path].view.update(master, {
+                        user: res.data
+                    });
+                } else {
+                    window.history.replaceState(null, null, '/');
+                    window.location.reload();
+                }
+            } else {
+                routes[404].view.update(master, {
+                    user: res.data
+                });
+            }
+        } else {
+            if (window.localStorage.getItem("token")) {
+                window.localStorage.removeItem("token");
+                window.history.replaceState(null, null, '/login');
+                window.location.reload();
+            } else {
+                if (routes[path]) {
+                    if (!routes[path].protected) {
+                        routes[path].view.render(master);
+                    } else {
+                        window.history.replaceState(null, null, '/login');
+                        window.location.reload();
+                    }
+                } else {
+                    routes[404].view.render(master);
+                }
+            }
         }
-        else if (!routes[path].protected && window.localStorage.getItem("token")) {
-            window.history.replaceState(null, null, '/');
-            window.location.reload();
-        }
-        else {
-            window.history.replaceState(null, null, '/login');
-            window.location.reload();
-        }
-    }
-    else {
-        routes[404].view.render(master);
-    }
+    }).catch((err)=>{
+        console.log(err.message);
+        console.log(err);
+    })
 }
 
 window.onpopstate = handleLocation;

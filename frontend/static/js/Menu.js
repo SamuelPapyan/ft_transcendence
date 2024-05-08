@@ -9,12 +9,16 @@ export default class Menu extends AbstractComponent{
     logout(event){
         event.preventDefault();
         window.localStorage.removeItem('token');
-        window.location.reload();
+        window.location.assign('/login')
     }
 
     activateEventHandlers() {
         const $logout = document.querySelector('#logout');
         $logout.addEventListener('click', this.logout);
+    }
+
+    injectUser(user) {
+        this.user = user
     }
 
     getHtml() {
@@ -40,7 +44,7 @@ export default class Menu extends AbstractComponent{
                 </li>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    me
+                    ${!this.user ? "???" : this.user.username}
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="navbarDropdown" style="z-index: 1021;">
                     <li><a class="dropdown-item" href="/profile">My Profile</a></li>

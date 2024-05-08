@@ -1,9 +1,12 @@
 import AbstractComponent from "./AbstractComponent.js";
 
 export default class Settings extends AbstractComponent {
-    constructor(user) {
-        super();
-        this.user = user 
+    constructor() {
+        super(); 
+    }
+
+    injectUser(user) {
+        this.user = user;
     }
 
     getHtml() {

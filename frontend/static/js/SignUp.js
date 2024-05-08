@@ -1,16 +1,23 @@
 import Login from "./Login.js"
+import UserService from "./services/UserService.js";
 
 export default class SignUp extends Login {
 
     static validateEnter(username, password) {
-        if (username.length >= 8 && password.length >= 10) {
-            window.localStorage.setItem("token", "fakeToken");
-            window.history.pushState(null, null, "/");
-            window.location.reload();
-        } else {
-            window.history.replaceState({isValid: false, username: username, password: password}, null, '/signup');
-            window.location.reload();
-        }
+        UserService.createUser({
+            username: username,
+            password: password,
+        }).then(res=>{
+            if (res.success) {
+                window.location.assign('/login');
+            } else {
+                window.history.replaceState({isValid: false, username: username, password: password}, null, '/signup');
+                window.location.reload();
+            }
+            
+        }).catch(err=>{
+            console.log(err.message);
+        })
     }
 
     submitForm(event) {
@@ -51,7 +58,7 @@ export default class SignUp extends Login {
                         <input type="password" name="password" class="form-control bg-dark border-success text-success" id="password">
                     </div>
                     ${ !this.isValid ?
-                        `<span class="d-block text-danger text-center">Invalid username or password</span>` : ""
+                        `<span class="d-block text-danger text-center">This user already exists.</span>` : ""
                     }
                     <div class="d-flex justify-content-between">
                         <button type="submit" class="btn btn-success">Sign Up</button>

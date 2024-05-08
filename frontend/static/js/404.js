@@ -4,6 +4,8 @@ import Menu from "./Menu.js";
 export default class Page404 extends AbstractPage {
     constructor(title) {
         super(title);
+        this.user = null;
+        this.menu = null;
     }
 
     render(masterView) {
@@ -11,9 +13,19 @@ export default class Page404 extends AbstractPage {
         masterView.innerHTML = this.getHtml();
     }
 
+    update(masterView, meta) {
+        for (let i in meta) {
+            this[i] = meta[i]
+        }
+        this.menu = new Menu("404");
+        this.menu.injectUser(this.user);
+        this.render(masterView);
+        this.menu.activateEventHandlers();
+    }
+
     getHtml() {
         return `
-        ${window.localStorage.getItem('token') ? new Menu("404").getHtml() : ""}
+        ${window.localStorage.getItem('token') ? this.menu.getHtml() : ""}
         <h1 class="text-center text-success">ENDO Pong</h1>
         <div class="w-100 d-flex justify-content-center">
             <div class="w-50 border border-success rounded px-2 py-3">

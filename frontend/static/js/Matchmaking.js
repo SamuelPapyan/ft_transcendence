@@ -1,13 +1,45 @@
 import AbstractComponent from "./AbstractComponent.js";
 
 export default class Matchmaking extends AbstractComponent {
-    constructor(user) {
+    constructor() {
         super();
-        this.user = user;
+        this.socket = null;
         this.player2 = "??????";
     }
 
+    beforeUnload(){
+        console.log(this.user.username);
+        this.socket.send(JSON.stringify({
+            method: "close",
+            user: this.user.username
+        }));
+    }
+
+    socketOnOpen(e) {
+        this.socket.send(JSON.stringify({
+            method: 'connect',
+            user: this.user.username,
+        }));
+    }
+
+    socketOnMessage(e) {
+        try {
+            console.log(e);
+            console.log(JSON.parse(e.data));
+        } catch (err) {
+            console.log(err.message);
+        }
+    }
+
     searchingForUser() {
+        this.socket = new WebSocket('ws://127.0.0.1:8000/ws')
+        this.socket.onopen = this.socketOnOpen.bind(this);
+        this.socket.onmessage = this.socketOnMessage.bind(this);
+        window.addEventListener('beforeunload', this.beforeUnload.bind(this));
+    }
+
+    activateEventHandlers() {
+        this.searchingForUser();
     }
 
     getHtml() {
@@ -20,7 +52,7 @@ export default class Matchmaking extends AbstractComponent {
                         <div class="d-flex justify-content-center">
                             <img class="w-50 rounded-circle" src="/static/imgs/avatar_default.png" alt=""/>
                         </div>
-                        <h3 class="text-success text-center">${this.user}</h3>
+                        <h3 class="text-success text-center">${this.user.username}</h3>
                     </div>
                     <h3 class="text-light">VS</h3>
                     <div>

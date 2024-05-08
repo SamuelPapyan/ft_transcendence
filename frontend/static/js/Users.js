@@ -1,21 +1,19 @@
 import AbstractComponent from "./AbstractComponent.js";
+import UserService from "./services/UserService.js";
 
 export default class Users extends AbstractComponent {
-    constructor(user) {
+    constructor() {
         super();
-        this.user = user 
     }
 
-    getUsers() {
+    injectUser(user) {
+        this.user = user;
+    }
+
+    getUsers(data) {
         let html = "";
-        const matches = [
-            {username: "sampap", wins: 20, loss: 11},
-            {username: "sampap", wins: 20, loss: 11},
-            {username: "sampap", wins: 20, loss: 11},
-            {username: "sampap", wins: 20, loss: 11},
-            {username: "sampap", wins: 20, loss: 11},
-        ]
-        matches.forEach(value=>{
+        data = data.filter(usr=>usr.username !== this.user.username);
+        data.forEach(value=>{
             html += `
             <div class="row mb-2">
                 <div class="row col-xl-6 col-sm-12  d-flex align-items-center border border-success rounded bg-dark">
@@ -29,11 +27,11 @@ export default class Users extends AbstractComponent {
                                 <div class="d-flex justify-content-start rounded-3 p-2 mb-2 bg-dark border border-success">
                                     <div>
                                         <p class="small text-muted mb-1">Wins</p>
-                                        <p class="mb-0 text-success">${value.wins}</p>
+                                        <p class="mb-0 text-success">${20}</p>
                                     </div>
                                     <div class="px-3">
                                         <p class="small text-muted mb-1">Loss</p>
-                                        <p class="mb-0 text-success">${value.loss}</p>
+                                        <p class="mb-0 text-success">${11}</p>
                                     </div>
                                 </div>
                                 <div class="d-flex pt-1">
@@ -49,11 +47,11 @@ export default class Users extends AbstractComponent {
         return html;
     }
 
-    getHtml() {
+    getHtml(data) {
         return `
         <h2 class="text-center text-success">Users</h2>
         <div class="w-100 d-flex flex-column align-items-center">
-            ${this.getUsers()}
+            ${this.getUsers(data)}
         </div>
         `
     }

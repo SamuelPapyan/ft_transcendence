@@ -1,9 +1,12 @@
 import AbstractComponent from "./AbstractComponent.js";
 
 export default class Profile extends AbstractComponent {
-    constructor(user) {
+    constructor() {
         super();
-        this.user = user 
+    }
+
+    injectUser(user) {
+        this.user = user;
     }
 
     getMatches() {
@@ -47,7 +50,9 @@ export default class Profile extends AbstractComponent {
 
     getHtml() {
         return `
-        <h2 class="text-center text-success">${this.user}'s Profile</h2>
+        <h2 class="text-center text-success">
+            ${this.user ? this.user.username : ""}
+        </h2>
         <div style="height:500px;" class="row d-flex">
             <div class="w-50 h-100 d-flex justify-content-center">
                 <img src="/static/imgs/avatar_default.png" class="d-block w-80 h-100 rounded-3 border border-success"/>

@@ -3,6 +3,9 @@ import Main from "./Main.js";
 import SignUp from "./SignUp.js";
 import Page404 from "./404.js";
 import AuthService from "./services/AuthService.js";
+import { Client } from "./client/Client.js";
+
+let client = new Client(location.origin);
 
 const localData = {
     latestUrlBeforeLogout : "/",
@@ -105,3 +108,5 @@ window.onpopstate = handleLocation;
 window.route = route;
 
 handleLocation();
+
+export {client}

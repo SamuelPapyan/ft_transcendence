@@ -1,44 +1,67 @@
 import AbstractComponent from "./AbstractComponent.js";
+import { matchmakingSocket } from "./sockets.js";
+import { client } from "./index.js";
 
 export default class Matchmaking extends AbstractComponent {
     constructor() {
         super();
         this.socket = null;
-        this.player2 = "??????";
+        this.player2 = null;
+        this.message = null;
+        this.countdown = null;
+        this.interval - null;
     }
 
-    beforeUnload(){
-        console.log(this.user.username);
-        this.socket.send(JSON.stringify({
-            method: "close",
-            user: this.user.username
-        }));
-    }
-
-    socketOnOpen(e) {
-        this.socket.send(JSON.stringify({
-            method: 'connect',
-            user: this.user.username,
-        }));
-    }
-
-    socketOnMessage(e) {
-        try {
-            console.log(e);
-            console.log(JSON.parse(e.data));
-        } catch (err) {
-            console.log(err.message);
+    async searchingForUser() {
+        if (client.matchmaking.searching) {
+            client.matchmaking.stop();
+        } else {
+            await client.matchmaking.start(this.onReceive.bind(this), this.onDisconnect.bind(this), this.user.username);
         }
     }
 
-    searchingForUser() {
-        this.socket = new WebSocket('ws://127.0.0.1:8000/ws')
-        this.socket.onopen = this.socketOnOpen.bind(this);
-        this.socket.onmessage = this.socketOnMessage.bind(this);
-        window.addEventListener('beforeunload', this.beforeUnload.bind(this));
+    onDisconnect(event) {
+        console.log("Disconnected");
+    }
+
+    intervalPredicator(){
+        const num = +this.countdown.innerText;
+        this.countdown.innerText = (num - 1);
+        if (num - 1 == 0)
+            window.location.assign('/pong');
+    }
+
+    startGame() {
+        this.message.innerText = "Game starts on "
+        this.countdown.innerText = "5";
+        this.interval = setInterval(this.intervalPredicator, 1000);
+    }
+
+    endGame() {
+        this.message.innerText = "Waiting for another player..."
+        this.countdown.innerText = "";
+        clearInterval(this.interval);
+    }
+
+    onReceive(data) {
+        const res = JSON.parse(data)
+        if (res.method === 'connect') {
+            if (res.members.length == 2) {
+                let otherUser = res.members.find(value => value != this.user.username);
+                this.player2.innerText = otherUser;
+                this.startGame();
+            }
+        }
+        else {
+            this.player2.innerText = "??????";
+            this.endGame();
+        }
     }
 
     activateEventHandlers() {
+        this.player2 = document.getElementById('other-user');
+        this.message = document.getElementById('message');
+        this.countdown = document.getElementById('countdown');
         this.searchingForUser();
     }
 
@@ -59,10 +82,13 @@ export default class Matchmaking extends AbstractComponent {
                         <div class="d-flex justify-content-center">
                             <img class="w-50 rounded-circle" src="/static/imgs/avatar_default.png" alt=""/>
                         </div>
-                        <h3 class="text-success text-center">${this.player2}</h3>
+                        <h3 id="other-user" class="text-success text-center">??????</h3>
                     </div>
                 </div>
-                <p class="text-center text-light">Waiting for a second player...</p>
+                <p class="text-center text-light">
+                    <span id="message">Waiting for a second player...</span>
+                    <span id="countdown"></span>
+                </p>
             </div>
         </div>
         `

@@ -5,7 +5,6 @@ export default async function viewDataHelper(page) {
         try {
             if (page == "users") {
                 UserService.getUsers().then(res=>{
-                    console.log(res);
                     resolve(res);
                 }).catch(()=>{
                     resolve(null);

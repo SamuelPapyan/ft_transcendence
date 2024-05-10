@@ -47,7 +47,7 @@ export default class Main extends AbstractPage {
                 this.components['menu'].activateEventHandlers();
                 this.components[this.page].activateEventHandlers();
             } else {
-                console.log("Not OK.");
+                // console.log("Not OK.");
             }
         }).catch(err=>{
             console.log(err.message);

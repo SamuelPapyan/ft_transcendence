@@ -9,7 +9,7 @@ urlpatterns = [
     path('users/<str:username>/update', views.UserApiViews.UserApiViews.update_users, name='update-users'),
     path('users/<str:username>/delete', view=views.UserApiViews.UserApiViews.delete_items, name='delete-items'),
     path('matches', view=views.MatchApiViews.MatchApiViews.ApiOverview, name='matches'),
-    path('matches/ongoing', view=views.MatchApiViews.MatchApiViews.ongoing_matches, name='ongoing-matches'),
+    # path('matches/ongoing', view=views.MatchApiViews.MatchApiViews.ongoing_matches, name='ongoing-matches'),
     # path('matches/all', view=views.MatchApiViews.MatchApiViews.view_matches, name='view-matches'),
     path('token', view=views.ObtainTokenApiView.ObtainTokenView.as_view(), name='optain-token')
 ]

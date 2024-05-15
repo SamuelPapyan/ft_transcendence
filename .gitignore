@@ -1,4 +1,5 @@
 .env
+venv
 ./ft_transcendence/__pycache__
 ./ft_transcendence/abstract/__pycache__
 ./frontend/__pycache__

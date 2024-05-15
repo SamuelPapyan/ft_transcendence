@@ -1,6 +1,6 @@
 #!/bin/bash
 
-python -m venv .env
+python -m venv venv
 source .env/bin/activate
 pip install -r requirements.txt
 python manage.py makemigrations

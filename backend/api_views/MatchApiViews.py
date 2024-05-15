@@ -2,7 +2,6 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import permissions, serializers, status
 from backend.models import Match
-from backend.serializers import MatchSerializer
 
 class MatchApiViews:
     @api_view(['GET'])

@@ -1,46 +1,36 @@
-from channels.generic.websocket import WebsocketConsumer
-
-from .AbstractRoomMember import AbstractRoomMember
-
 class AbstractRoom:
-    def __init__(self, room_manager):
-        self._member_list = []
-        self.room_manager = room_manager
+    def __init__(self):
+        self.members = []
 
-    def broadcast(self, detail, data = {}):
-        for member in self._member_list:
-            member.send(detail, data)
+    def broadcast(self, data = {}):
+        for member in self.members:
+            member.send(data)
 
     def clear(self):
-        self._member_list.clear()
-
-    def get_member_by_socket(self, socket):
-        for member in self._member_list:
-            if member.socket is socket:
-                return member
-        return None
+        for member in self.members:
+            self.remove(member)
     
-    def get_member_by_username(self, username):
-        for member in self._member_list:
+    def get_member(self, username):
+        for member in self.members:
             if member.username == username:
                 return member
         return None
     
-    def append(self, member: AbstractRoomMember):
-        self._member_list.append(member)
+    def append(self, member):
+        self.members.append(member)
         member.accept()
 
     def remove(self, member, code = 1000):
-        self._member_list.remove(member)
+        self.members.remove(member)
         member.disconnect(code)
 
     def empty(self):
-        for _ in self._member_list:
+        for _ in self.members:
             return False
         return True
     
     def get_username(self):
-        return [member.username for member in self._member_list]
+        return [member.username for member in self.members]
     
     def __len__(self):
-        return len(self._member_list)
+        return len(self.members)

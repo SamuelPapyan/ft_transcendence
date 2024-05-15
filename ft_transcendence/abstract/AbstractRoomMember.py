@@ -7,10 +7,8 @@ class AbstractRoomMember:
         self.username = username
         self.socket = socket
 
-    def send(self, detail, data = {}):
-        raw_data = {"detail": detail}
-        raw_data.update(data)
-        self.socket.send(text_data=json.dumps(raw_data))
+    def send(self, data):
+        self.socket.send(text_data=json.dumps(data))
 
     def accept(self):
         self.socket.accept()

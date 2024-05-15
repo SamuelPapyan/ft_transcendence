@@ -6,12 +6,11 @@ class Waiter(AbstractRoomMember):
     pass
 
 class WaitingRoom(AbstractRoom):
-    def __init__(self, room_manager, room_name):
-        super().__init__(room_manager)
-        self.room_name = room_name
+    def __init__(self):
+        super().__init__()
 
     def append(self, waiter):
-        tmp = self.get_member_by_username(waiter.username)
+        tmp = self.get_member(waiter.username)
         if tmp is not None:
             tmp.send("Connection close: Another connection open with the same username.")
             self.remove(tmp)
@@ -19,12 +18,6 @@ class WaitingRoom(AbstractRoom):
         self._member_list.append(waiter)
 
 class WaitingRoomMananger(AbstractRoomManager):
-    def get(self, room_name):
-        for waiting_room in self._room_list:
-            if waiting_room.room_name == room_name:
-                return waiting_room
-        tmp = WaitingRoom(self, room_name)
-        super().append(tmp)
-        return tmp
+    pass
 
 normal = WaitingRoomMananger()

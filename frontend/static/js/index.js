@@ -62,7 +62,7 @@ const route = (event) => {
     handleLocation();
 }
 
-function handleLocation() {
+export function handleLocation() {
     const path = window.location.pathname;
     AuthService.getProfile().then(res=>{
         if (res.data) {

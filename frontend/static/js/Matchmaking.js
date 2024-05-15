@@ -1,23 +1,19 @@
 import AbstractComponent from "./AbstractComponent.js";
 import { matchmakingSocket } from "./sockets.js";
-import { client } from "./index.js";
+import { client, handleLocation } from "./index.js";
 
 export default class Matchmaking extends AbstractComponent {
     constructor() {
         super();
-        this.socket = null;
         this.player2 = null;
         this.message = null;
         this.countdown = null;
         this.interval - null;
+        this.players = null;
     }
 
     async searchingForUser() {
-        if (client.matchmaking.searching) {
-            client.matchmaking.stop();
-        } else {
-            await client.matchmaking.start(this.onReceive.bind(this), this.onDisconnect.bind(this), this.user.username);
-        }
+        await client.matchmaking.start(this.onReceive.bind(this), this.onDisconnect.bind(this), this.user.username);
     }
 
     onDisconnect(event) {
@@ -27,14 +23,22 @@ export default class Matchmaking extends AbstractComponent {
     intervalPredicator(){
         const num = +this.countdown.innerText;
         this.countdown.innerText = (num - 1);
-        if (num - 1 == 0)
-            window.location.assign('/pong');
+        console.log(this.players);
+        if (num - 1 == 0) {
+            client.matchmaking.addToMatch();
+        }
+    }
+
+    redirectToPong() {
+        clearInterval(this.interval);
+        window.history.pushState({players: this.players}, null, '/pong')
+        handleLocation();
     }
 
     startGame() {
         this.message.innerText = "Game starts on "
         this.countdown.innerText = "5";
-        this.interval = setInterval(this.intervalPredicator, 1000);
+        this.interval = setInterval(this.intervalPredicator.bind(this), 1000);
     }
 
     endGame() {
@@ -45,12 +49,15 @@ export default class Matchmaking extends AbstractComponent {
 
     onReceive(data) {
         const res = JSON.parse(data)
+        this.players = res.members;
         if (res.method === 'connect') {
             if (res.members.length == 2) {
                 let otherUser = res.members.find(value => value != this.user.username);
                 this.player2.innerText = otherUser;
                 this.startGame();
             }
+        } else if (res.method === 'add') {
+            this.redirectToPong()
         }
         else {
             this.player2.innerText = "??????";

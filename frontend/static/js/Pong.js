@@ -1,146 +1,175 @@
 import AbstractComponent from "./AbstractComponent.js";
-
-const data = {
-    gameOn: true,
-    x: 400 - 10,
-    y: 250 - 10,
-    p1_score: 0,
-    p2_score: 0,
-    p1_y: 200,
-    p2_y: 200,
-    dx: -1,
-    dy: -1,
-}
-
-function startGame(){
-    // P1 Goal
-    if (data.gameOn) {
-        if (data.x + data.dx > 800 - 10) {
-            data.p1_score += 1;
-            data.x = 400 - 10;
-            data.y = 250 - 10;
-        }
-
-        // P2 Goal
-        if (data.x + data.dx < 10) {
-            data.p2_score += 1;
-            data.x = 400 - 10;
-            data.y = 250 - 10;
-        }
-        
-        //Y-Collision
-        if (data.y + data.dy > 500 - 10
-            || data.y + data.dy < 10) {
-            data.dy = -data.dy;
-        }
-
-        //P1 Paddle Collision
-        if (data.y >= data.p1_y && data.y <= data.p1_y + 100 - 10 &&
-            (data.x + data.dx < 40 + 10))
-            data.dx = -data.dx;
-
-        //P2 Paddle Collision
-        if (data.y >= data.p2_y && data.y <= data.p2_y + 100 - 10 &&
-            (data.x + data.dx > 800 - 40 - 10))
-            data.dx = -data.dx;
-        data.x += data.dx;
-        data.y += data.dy;
-    }
-}
-
-setInterval(startGame, 1);
-
-async function getData() {
-    return data;
-}
-
-async function sendData(y) {
-    for(let i in y)
-        if (i == "gameOn")
-            data[i] = y[i];
-        else
-            data[i] += y[i];
-}
-
-let upPressed = false;
-let downPressed = false;
-
-function onKeyDown(event) {
-    if (event.key == 'w')
-        upPressed = true;
-    else if (event.key == 's')
-        downPressed = true;
-}
-
-function onKeyUp(event) {
-    if (event.key == 'w')
-        upPressed = false;
-    else if (event.key == 's')
-        downPressed = false;
-}
+import { client } from "./index.js";
 
 export default class Pong extends AbstractComponent {
     constructor() {
         super();
-        this.gameOn = true;
-    }
-    renderPong(elems, ctx) {
-        if (this.gameOn && elems.area) {
-            getData().then(data=>{
-                ctx.clearRect(0, 0, 800, 500);
-                ctx.fillStyle = "green";
-                ctx.fillRect(20, data.p1_y, 20, 100);
-                ctx.fillStyle = "red";
-                ctx.fillRect(+elems.area.width - 40, data.p2_y, 20, 100);
-                ctx.beginPath();
-                ctx.arc(data.x, data.y, 10, 0, Math.PI * 2);
-                ctx.fillStyle = "orange";
-                ctx.fill();
-                elems.p1Score.innerText = data.p1_score;
-                elems.p2Score.innerText = data.p2_score;
-                if (data.p1_score >= 7 || data.p2_score >= 7){
-                    this.gameOn = false;
-                    sendData({gameOn: false});
-                }
-            });
-        }
-        
+        this.gameOn = false;
+        this.player2 = null;
+        this.upPressed = false;
+        this.downPressed = false;
+        this.player1Score = null;
+        this.player2Score = null;
+        this.area = null;
+        this.ctx = null;
+        this.interval = null;
+        this.winnerName = null;
+        this.player1Label = null;
+        this.player2Label = null;
+        this.player1FinalScore = null;
+        this.player2FinalScore = null;
+        this.resultModal = null;
     }
 
-    update(elems, ctx) {
-        this.renderPong(elems, ctx);
-        if (upPressed) {
-            sendData({p1_y: -2});
-        } else if (downPressed) {
-            sendData({p1_y: 2});
+    onKeyDown(event) {
+        if (event.key == 'w')
+            this.upPressed = true;
+        else if (event.key == 's')
+            this.downPressed = true;
+    }
+
+    onKeyUp(event) {
+        if (event.key == 'w')
+            this.upPressed = false;
+        else if (event.key == 's')
+            this.downPressed = false;
+    }
+
+    renderPong(data, members, final_scores){
+        this.ctx.clearRect(0, 0, 800, 500);
+        if (members.indexOf(this.user.username) == 0) {
+            this.ctx.fillStyle = "green";
+            this.ctx.fillRect(20, data.p1_y, 20, 100);
+            this.ctx.fillStyle = "red";
+            this.ctx.fillRect(+this.area.width - 40, data.p2_y, 20, 100);
+            this.ctx.beginPath();
+            this.ctx.arc(data.x + 400, data.y + 250 - 10, 10, 0, Math.PI * 2);
+            this.ctx.fillStyle = "orange";
+            this.ctx.fill();
+            this.player1Score.innerText = final_scores[0];
+            this.player2Score.innerText = final_scores[1];
+        } else {
+            this.ctx.fillStyle = "green";
+            this.ctx.fillRect(20, data.p2_y, 20, 100);
+            this.ctx.fillStyle = "red";
+            this.ctx.fillRect(+this.area.width - 40, data.p1_y, 20, 100);
+            this.ctx.beginPath();
+            this.ctx.arc(-data.x + 400, data.y + 250 - 10, 10, 0, Math.PI * 2);
+            this.ctx.fillStyle = "orange";
+            this.ctx.fill();
+            this.player1Score.innerText = final_scores[1];
+            this.player2Score.innerText = final_scores[0];
         }
+    }
+
+    async startPong() {
+        await client.pong.start(this.onReceive.bind(this), this.onDisconnect.bind(this), this.user.username);
+    }
+
+    intervalPredicator() {
+        if (this.upPressed) {
+            client.pong.sendMove(-2);
+        } else if (this.downPressed) {
+            client.pong.sendMove(2);
+        } else {
+            client.pong.sendGame();
+        }
+    }
+
+    startGame() {
+        this.interval = setInterval(this.intervalPredicator.bind(this), 1);
+    }
+
+    onReceive(data) {
+        const res = JSON.parse(data)
+        this.players = res.members;
+        if (res.method === 'connect' || res.method === 'move' || res.method === 'game') {
+            if (res.method === 'connect') {
+                if (res.members.length == 2) {
+                    let otherUser = res.members.find(value => value != this.user.username);
+                    this.player2.innerText = otherUser;
+                    this.gameOn = true;
+                    this.startGame();
+                }
+            }
+            if (res.winner) {
+                clearInterval(this.interval);
+                this.winnerName.innerText = res.winner;
+                this.player1Label.innerText = res.members[0]
+                this.player2Label.innerText = res.members[1]
+                this.player1FinalScore.innerText = res.final_scores[0]
+                this.player2FinalScore.innerText = res.final_scores[1]
+                this.resultModal.style.display = "block";
+            }
+            this.renderPong(res.game_data, res.members, res.final_scores);
+        }
+        else if (res.method === 'disconnect'){
+            this.player2.innerText = "??????";
+            clearInterval(this.interval);
+        }
+    }
+
+    onDisconnect(event) {
+        console.log("Disconnected");
     }
 
     activateEventHandlers() {
-        const $area = document.querySelector('#pong-area');
-        const $p1Score = document.querySelector('#p1-score');
-        const $p2Score = document.querySelector('#p2-score');
-        const $ctx = $area.getContext('2d');
-        document.addEventListener('keyup', onKeyUp);
-        document.addEventListener('keydown', onKeyDown);
-        setInterval(()=>this.update({
-            area: $area,
-            p1Score: $p1Score,
-            p2Score: $p2Score,
-        }, $ctx), 1);
-        this.renderPong($area, $ctx);
+        this.area = document.querySelector('#pong-area');
+        this.player1Score = document.querySelector('#p1-score');
+        this.player2Score = document.querySelector('#p2-score');
+        this.ctx = this.area.getContext('2d');
+        this.player2 = document.querySelector('#player2');
+        this.winnerName  = document.querySelector('#winnerName');
+        this.player1Label = document.querySelector('#player1Label');
+        this.player2Label = document.querySelector('#player2Label');
+        this.player1FinalScore = document.querySelector('#player1FinalScore');
+        this.player2FinalScore = document.querySelector('#player2FinalScore');
+        this.resultModal = document.querySelector('#resultModal');
+        if (window.history.state?.players) {
+            client.matchmaking.clientLeave();
+            client.matchmaking.stop();
+            this.player2.innerText = window.history.state.players.find(val => val !== this.user.username)
+        }
+        document.addEventListener('keyup', this.onKeyUp.bind(this));
+        document.addEventListener('keydown', this.onKeyDown.bind(this));
+        this.startPong();
     }
 
     getHtml() {
         return `
         <div class="row">
             <div class="col-6">
-                <h3 class="text-success">Sampap: <span id="p1-score">0</span></h3>
-                <h3 class="text-danger">??????: <span id="p2-score">0</span></h3>
+                <h3 class="text-success">${this.user.username}: <span id="p1-score">0</span></h3>
+                <h3 class="text-danger"><span id="player2">??????</span>: <span id="p2-score">0</span></h3>
             </div>
         </div>
         <div class="d-flex justify-content-center">
             <canvas class="bg-white" id="pong-area" width="800" height="500"></canvas>
+        </div>
+        <div class="modal" style="display:none;" tabindex="-1" id="resultModal">
+            <div class="modal-dialog">
+                <div class="modal-content bg-dark">
+                <div class="modal-header border-success">
+                    <h5 class="text-center text-success modal-title">Modal title</h5>
+                </div>
+                <div class="modal-body">
+                    <h3 class="text-success text-center">The winner is <span id="winnerName">WINNER</span></h3>
+                    <div class="d-flex justify-content-evenly row">
+                        <div class="col-4 border border-success rounded">
+                            <h3 id="player1Label" class="text-center text-success">Player 1</h3>
+                            <h3 id="player1FinalScore" class="text-center text-success">10</h3>
+                        </div>
+                        <div class="col-4 border border-success rounded">
+                            <h3 id="player2Label" class="text-center text-danger">Player 2</h3>
+                            <h3 id="player2FinalScore" class="text-center text-danger">9</h3>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-success">
+                    <button type="button" class="btn btn-success"><a href="/">Ok</a></button>
+                </div>
+                </div>
+            </div>
         </div>
         `;
     }

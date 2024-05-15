@@ -30,10 +30,9 @@ class Match(models.Model):
     p2 = models.ForeignKey(User, related_name='player_2', on_delete=models.CASCADE)
     p1_score = models.IntegerField(default=0)
     p2_score = models.IntegerField(default=0)
-    start = models.DateTimeField(default=datetime.now())
+    start = models.DateTimeField(null=True)
     end = models.DateTimeField(null=True)
-    win = models.ForeignKey(User, related_name='winner_player', on_delete=models.CASCADE)
-    lose = models.ForeignKey(User, related_name='loser_player', on_delete=models.CASCADE)
+    winner = models.ForeignKey(User, related_name='winner_player', on_delete=models.CASCADE, null=True, blank=True)
     is_ongoing = models.BooleanField(default=True)
 
 

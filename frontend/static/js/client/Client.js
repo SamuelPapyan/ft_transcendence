@@ -1,4 +1,5 @@
 import { MatchMakingClient } from "./MatchMakingClient.js";
+import { PongClient } from "./PongClient.js";
 
 function getCookie(name) {
     let cookie = {};
@@ -13,6 +14,7 @@ class Client {
     constructor(url) {
         this._url = url;
         this.matchmaking = new MatchMakingClient(this);
+        this.pong = new PongClient(this);
     }
 
     async isAuthenticated() {

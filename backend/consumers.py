@@ -2,6 +2,8 @@ import json
 from channels.generic.websocket import WebsocketConsumer
 from django.contrib.auth import get_user_model
 from .view_models import Waiter, WaitingRoom, WaitingRoomMananger, normal
+from .models import Match, User
+from datetime import datetime
 
 class MatchMaking(WebsocketConsumer):
     users = {}
@@ -9,6 +11,16 @@ class MatchMaking(WebsocketConsumer):
         if len(MatchMaking.users) == 2:
             self.disconnect(1000)
         self.accept()
+
+    def create_match(self):
+        p1 = User.objects.get(username=list(MatchMaking.users.keys())[0])
+        p2 = User.objects.get(username=list(MatchMaking.users.keys())[1])
+        match = Match(
+            p1 = p1,
+            p2 = p2,
+            start = datetime.now()
+        )
+        match.save()
 
     def receive(self, text_data=None, bytes_data=None):
         print(MatchMaking.users)
@@ -18,6 +30,9 @@ class MatchMaking(WebsocketConsumer):
             if obj["user"] in list(MatchMaking.users.keys()):
                 self.close(1000)
             MatchMaking.users[obj["user"]] = self
+        elif obj["method"] == 'add':
+            if obj["user"] == list(MatchMaking.users.keys())[0]:
+                self.create_match()
         elif obj["method"] == 'disconnect':
             del(MatchMaking.users[obj["user"]])
         for i in MatchMaking.users:
@@ -91,6 +106,18 @@ class PongConsumer(WebsocketConsumer):
             PongConsumer.data["x"] += PongConsumer.data["dx"]
             PongConsumer.data["y"] += PongConsumer.data["dy"]
 
+    def save_match(self, winner):
+        p1 = User.objects.get(username=list(PongConsumer.users.keys())[0])
+        winnerP = User.objects.get(username=winner)
+        match = Match.objects.get(p1=p1, is_ongoing=True)
+        match.p1_score = PongConsumer.data["p1_score"]
+        match.p2_score = PongConsumer.data["p2_score"]
+        match.end = datetime.now()
+        match.winner = winnerP
+        match.is_ongoing = False
+        match.save()
+
+
     def receive(self, text_data=None, bytes_data=None):
         obj = json.loads(text_data)
         winner = None
@@ -120,6 +147,7 @@ class PongConsumer(WebsocketConsumer):
                     winner = ps[0]
                 else:
                     winner = ps[1]
+                self.save_match(winner)
                 self.reset_game_data()
         for i in PongConsumer.users:
             PongConsumer.users[i].send(text_data=json.dumps({

@@ -25,7 +25,7 @@ export default class Matchmaking extends AbstractComponent {
         this.countdown.innerText = (num - 1);
         console.log(this.players);
         if (num - 1 == 0) {
-            this.redirectToPong();
+            client.matchmaking.addToMatch();
         }
     }
 
@@ -56,6 +56,8 @@ export default class Matchmaking extends AbstractComponent {
                 this.player2.innerText = otherUser;
                 this.startGame();
             }
+        } else if (res.method === 'add') {
+            this.redirectToPong()
         }
         else {
             this.player2.innerText = "??????";

@@ -1,4 +1,4 @@
-from .models import User
+from .models import User, Match
 from rest_framework import serializers
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
@@ -14,29 +14,17 @@ class UserViewSerializer(serializers.HyperlinkedModelSerializer):
         fields = ['username', 'two_factor', 'full_name']
 
 # class MatchSerializer(serializers.ModelSerializer):
-#     p1_name = serializers.RelatedField(
-#         many=False,
-#         read_only=True,
-#         source='p1',
+#     p1_username = serializers.RelatedField(
+
 #     )
-#     p2_name = serializers.RelatedField(
+#     p2_username = serializers.RelatedField(
 #         many=False,
 #         read_only=True,
-#         source='p2',
-#     )
-#     win_name = serializers.RelatedField(
-#         many=False,
-#         read_only=True,
-#         source='win',
-#     )
-#     lose_name = serializers.RelatedField(
-#         many=False,
-#         read_only=True,
-#         source='lose',
+#         source='p2'
 #     )
 #     class Meta:
 #         model = Match
-#         fields = ['p1_name', 'p2_name', 'p1_score', 'p2_score', 'win_name', 'lose_name']
+#         fields = ['p1_username', 'p2_username']
 
 class ObtainTokenSerializer(serializers.Serializer):
     username = serializers.CharField()

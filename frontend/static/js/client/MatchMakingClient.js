@@ -48,6 +48,15 @@ class MatchMakingClient {
         }
     }
 
+    addToMatch() {
+        if (this._socket) {
+            this._socket.send(JSON.stringify({
+                "method": "add",
+                "user": this.user,
+            }))
+        }
+    }
+
     stop(){
         if (this._socket)
             this._socket.close()

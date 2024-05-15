@@ -22,7 +22,6 @@ export default class Pong extends AbstractComponent {
     }
 
     onKeyDown(event) {
-        console.log("key down")
         if (event.key == 'w')
             this.upPressed = true;
         else if (event.key == 's')
@@ -30,7 +29,6 @@ export default class Pong extends AbstractComponent {
     }
 
     onKeyUp(event) {
-        console.log("key up")
         if (event.key == 'w')
             this.upPressed = false;
         else if (event.key == 's')
@@ -102,7 +100,6 @@ export default class Pong extends AbstractComponent {
                 this.player1FinalScore.innerText = res.final_scores[0]
                 this.player2FinalScore.innerText = res.final_scores[1]
                 this.resultModal.style.display = "block";
-                console.log("winner is", res.winner);
             }
             this.renderPong(res.game_data, res.members, res.final_scores);
         }
@@ -113,7 +110,6 @@ export default class Pong extends AbstractComponent {
     }
 
     onDisconnect(event) {
-        console.log(event);
         console.log("Disconnected");
     }
 

@@ -18,7 +18,6 @@ class AbstractRoom:
     
     def append(self, member):
         self.members.append(member)
-        member.accept()
 
     def remove(self, member, code = 1000):
         self.members.remove(member)
@@ -29,7 +28,7 @@ class AbstractRoom:
             return False
         return True
     
-    def get_username(self):
+    def usernames(self):
         return [member.username for member in self.members]
     
     def __len__(self):

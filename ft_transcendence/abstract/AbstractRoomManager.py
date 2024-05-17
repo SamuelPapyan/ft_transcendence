@@ -1,15 +1,22 @@
 class AbstractRoomManager:
     def __init__(self):
-        self.rooms = {}
+        self.rooms = []
 
-    def remove(self, room_name):
-        self.rooms[room_name].clear()
-        del(self.rooms[room_name])
+    def remove(self, room):
+        room.clear()
+        self.rooms.remove(room)
 
-    def append(self, room_name, room):
-        self.rooms[room_name] = room
+    def append(self, room):
+        self.rooms.append(room)
 
-    def get(self, room_name):
-        if room_name in list(self.rooms.keys()):
-            return self.rooms[room_name]
+    def get(self):
+        if len(self.rooms) > 0:
+            return self.rooms[len(self.rooms) - 1]
+        return None
+    
+    def find_by_username(self, username):
+        for room in self.rooms:
+            mem = room.get_member(username)
+            if mem is not None:
+                return room
         return None

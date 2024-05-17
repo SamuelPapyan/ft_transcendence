@@ -64,44 +64,46 @@ const route = (event) => {
 
 export function handleLocation() {
     const path = window.location.pathname;
-    AuthService.getProfile().then(res=>{
-        if (res.data) {
-            if (routes[path]) {
-                if (routes[path].protected) {
-                    routes[path].view.update(master, {
-                        user: res.data
-                    });
-                } else {
-                    window.history.replaceState(null, null, '/');
-                    window.location.reload();
-                }
-            } else {
-                routes[404].view.update(master, {
-                    user: res.data
-                });
-            }
-        } else {
-            if (window.localStorage.getItem("token")) {
-                window.localStorage.removeItem("token");
-                window.history.replaceState(null, null, '/login');
-                window.location.reload();
-            } else {
+    if (window.localStorage.getItem("token")) {
+        AuthService.getProfile().then(res=>{
+            if (res.data) {
                 if (routes[path]) {
-                    if (!routes[path].protected) {
-                        routes[path].view.render(master);
+                    if (routes[path].protected) {
+                        routes[path].view.update(master, {
+                            user: res.data
+                        });
                     } else {
-                        window.history.replaceState(null, null, '/login');
+                        window.history.replaceState(null, null, '/');
                         window.location.reload();
                     }
                 } else {
-                    routes[404].view.render(master);
+                    routes[404].view.update(master, {
+                        user: res.data
+                    });
+                }
+            } else {
+                if (window.localStorage.getItem("token")) {
+                    window.localStorage.removeItem("token");
+                    window.history.replaceState(null, null, '/login');
+                    window.location.reload();
                 }
             }
+        }).catch((err)=>{
+            console.log(err.message);
+            console.log(err);
+        })
+    } else {
+        if (routes[path]) {
+            if (!routes[path].protected) {
+                routes[path].view.render(master);
+            } else {
+                window.history.replaceState(null, null, '/login');
+                window.location.reload();
+            }
+        } else {
+            routes[404].view.render(master);
         }
-    }).catch((err)=>{
-        console.log(err.message);
-        console.log(err);
-    })
+    }
 }
 
 window.onpopstate = handleLocation;

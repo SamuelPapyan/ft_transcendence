@@ -11,8 +11,8 @@ services:
     volumes:
       - ${PWD}/django:/django
     restart: unless-stopped
-    networks:
-      - transcendence
+    # networks:
+    #   - transcendence
     depends_on:
       - postgres
 
@@ -27,8 +27,8 @@ services:
        POSTGRES_HOST_AUTH_METHOD: password
     ports:
       - 5432:5432
-    networks:
-      - transcendence
+    # networks:
+    #   - transcendence
     volumes: 
     - ./pg_hba.conf:/var/lib/foo/pg_hba.conf
     command: ["postgres", "-c", "hba_file=/var/lib/foo/pg_hba.conf"]
@@ -46,9 +46,9 @@ services:
       - django
     restart: always
 
-networks:
-  transcendence:
-    driver: bridge
+# networks:
+#   transcendence:
+#     driver: bridge
 
 # volumes:
 #   postgres_db:

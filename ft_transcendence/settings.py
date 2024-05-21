@@ -10,11 +10,13 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
+# import os
 from pathlib import Path
 from datetime import timedelta
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+USE_X_FORWARDED_HOST = True
 
 
 # Quick-start development settings - unsuitable for production
@@ -26,8 +28,13 @@ SECRET_KEY = 'django-insecure-io16!nxiz1qzpwh75$6504_2_9&&*)34e&x&hx+&u!o4f^*3%4
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ['*', '127.0.0.1', 'localhost']
+# ALLOWED_HOSTS.extend(
+#     filter(
+#         None.
+#         os.environ.get('ALLOWED_HOSTS', '').split(','),
+#     )
+# )
 
 # Application definition
 
@@ -89,10 +96,10 @@ ASGI_APPLICATION = 'ft_transcendence.asgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
+        'NAME': 'transcendence_db',
         'USER': 'postgres',
         'PASSWORD': 'postgres123',
-        'HOST': 'localhost',
+        'HOST': 'postgres',
         'PORT': '5432',
     }
 }

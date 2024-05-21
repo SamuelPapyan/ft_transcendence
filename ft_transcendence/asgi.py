@@ -16,6 +16,7 @@ from channels.auth import AuthMiddlewareStack
 from django.urls import path
 from backend.consumers.PongConsumer import PongConsumer
 from backend.consumers.MatchMakingConsumer import MatchMakingConsumer
+from backend.consumers.ChatConsumer import ChatConsumer
 
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ft_transcendence.settings')
@@ -26,8 +27,9 @@ application = ProtocolTypeRouter({
     "http": asgi,
     "websocket": AuthMiddlewareStack(
         URLRouter([
-            path('ws', MatchMakingConsumer.as_asgi()),
-            path('ws/pong', PongConsumer.as_asgi()),
+            path('matchmaking', MatchMakingConsumer.as_asgi()),
+            path('pong', PongConsumer.as_asgi()),
+            path('chat', ChatConsumer.as_asgi()),
         ])
     )
 })

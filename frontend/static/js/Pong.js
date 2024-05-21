@@ -43,7 +43,7 @@ export default class Pong extends AbstractComponent {
             this.ctx.fillStyle = "red";
             this.ctx.fillRect(+this.area.width - 40, data.p2_y, 20, 100);
             this.ctx.beginPath();
-            this.ctx.arc(data.x + 400, data.y + 250 - 10, 10, 0, Math.PI * 2);
+            this.ctx.arc(data.x + 400 - 10, data.y + 250 - 10, 10, 0, Math.PI * 2);
             this.ctx.fillStyle = "orange";
             this.ctx.fill();
             this.player1Score.innerText = final_scores[0];
@@ -54,7 +54,7 @@ export default class Pong extends AbstractComponent {
             this.ctx.fillStyle = "red";
             this.ctx.fillRect(+this.area.width - 40, data.p1_y, 20, 100);
             this.ctx.beginPath();
-            this.ctx.arc(-data.x + 400, data.y + 250 - 10, 10, 0, Math.PI * 2);
+            this.ctx.arc(-data.x + 400 - 10, data.y + 250 - 10, 10, 0, Math.PI * 2);
             this.ctx.fillStyle = "orange";
             this.ctx.fill();
             this.player1Score.innerText = final_scores[1];
@@ -72,7 +72,7 @@ export default class Pong extends AbstractComponent {
         } else if (this.downPressed) {
             client.pong.sendMove(2);
         } else {
-            client.pong.sendGame();
+            client.pong.sendGame(members[0]);
         }
     }
 
@@ -147,11 +147,8 @@ export default class Pong extends AbstractComponent {
             <canvas class="bg-white" id="pong-area" width="800" height="500"></canvas>
         </div>
         <div class="modal" style="display:none;" tabindex="-1" id="resultModal">
-            <div class="modal-dialog">
+            <div class="modal-dialog modal-dialog-center">
                 <div class="modal-content bg-dark">
-                <div class="modal-header border-success">
-                    <h5 class="text-center text-success modal-title">Modal title</h5>
-                </div>
                 <div class="modal-body">
                     <h3 class="text-success text-center">The winner is <span id="winnerName">WINNER</span></h3>
                     <div class="d-flex justify-content-evenly row">
@@ -165,8 +162,8 @@ export default class Pong extends AbstractComponent {
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer border-success">
-                    <button type="button" class="btn btn-success"><a href="/">Ok</a></button>
+                <div class="modal-footer border-success d-flex justify-content-center">
+                    <button type="button" class="btn btn-success"><a href="/" class="text-decoration-none text-light">Ok</a></button>
                 </div>
                 </div>
             </div>

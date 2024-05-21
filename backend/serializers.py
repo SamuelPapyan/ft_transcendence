@@ -11,7 +11,7 @@ class UserSerializer(serializers.HyperlinkedModelSerializer):
 class UserViewSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = User
-        fields = ['username', 'two_factor', 'full_name']
+        fields = ['id', 'username', 'two_factor', 'full_name']
 
 # class MatchSerializer(serializers.ModelSerializer):
 #     p1_username = serializers.RelatedField(

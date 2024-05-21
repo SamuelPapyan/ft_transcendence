@@ -1,13 +1,65 @@
 import AbstractComponent from "./AbstractComponent.js";
-import UserService from "./services/UserService.js";
+import ChatService from "./services/chatService.js";
+import Chat from "./Chat.js";
 
 export default class Users extends AbstractComponent {
     constructor() {
         super();
+        this.dmUser = null;
+        this.dmSend = null;
+        this.dmContent = null;
     }
 
     injectUser(user) {
         this.user = user;
+    }
+
+    chatClick(event) {
+        ChatService.hasDM({
+            sender: this.user.username,
+            to: event.target.getAttribute("user")
+        }).then(res=>{
+            if (res.success) {
+                if (res.data) {
+                    Chat.dmUser = event.target.getAttribute("user")
+                    $("#chat-view").modal("show")
+                } else {
+                    this.dmUser.innerHTML = event.target.getAttribute("user")
+                    $("#dm-modal").modal("toggle")
+                }
+            }
+        }).catch(err=>{
+            console.log(err.message);
+        })
+    }
+
+    onDmSend(){
+        const content = this.dmContent.value;
+        ChatService.createDM({
+            sender: this.user.username,
+            to: this.dmUser.innerText,
+            content: content
+        }).then(res=>{
+            if (res.success) {
+                $("#dm-modal").modal("hide")
+                $("#chat-view").modal("show")
+            }
+        }).catch(err=>{
+            console.log(err.message);
+        })
+    }
+
+    activateEventHandlers(){
+        const chatButtons = [...document.querySelectorAll('.chat-button')]
+        this.dmUser = document.querySelector('#dm-username')
+        this.dmSend = document.querySelector('#dm-send')
+        this.dmContent = document.querySelector('#dm-content')
+        this.dmModal = document.querySelector('#dm-modal')
+        chatButtons.forEach(elem=>{
+            elem.addEventListener('click', this.chatClick.bind(this))
+        })
+        this.dmSend.addEventListener('click', this.onDmSend.bind(this));
+        $("#chat-view").modal("show")
     }
 
     getUsers(data) {
@@ -35,7 +87,7 @@ export default class Users extends AbstractComponent {
                                     </div>
                                 </div>
                                 <div class="d-flex pt-1">
-                                    <button type="button" class="btn btn-outline-success me-1 flex-grow-1">Chat</button>
+                                    <button type="button" class="btn btn-outline-success me-1 flex-grow-1 chat-button" user="${value.username}">Chat</button>
                                     <button type="button" class="btn btn-success flex-grow-1">Follow</button>
                                 </div>
                             </div>
@@ -52,6 +104,23 @@ export default class Users extends AbstractComponent {
         <h2 class="text-center text-success">Users</h2>
         <div class="w-100 d-flex flex-column align-items-center">
             ${this.getUsers(data)}
+        </div>
+        <div class="modal fade" id="dm-modal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="">Write DM to <span id="dm-username"></span></h5>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                            <input id="dm-content" class="form-control" type="text" placeholder="Type some message" name="content"/>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="dm-send" type="button" class="btn btn-success">Send</button>
+                </div>
+                </div>
+            </div>
         </div>
         `
     }

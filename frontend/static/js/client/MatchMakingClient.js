@@ -15,7 +15,7 @@ class MatchMakingClient {
     async start(receive_func, disconnect_func, username) {
         console.log("start");
         this.user = username;
-        let url = `ws://localhost:8000/ws`;
+        let url = `ws://localhost:8000/matchmaking`;
 
         this._socket = new WebSocket(url);
 

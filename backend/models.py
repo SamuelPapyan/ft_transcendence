@@ -36,16 +36,17 @@ class Match(models.Model):
     is_ongoing = models.BooleanField(default=True)
 
 
-# class Message(models.Model):
-#     content = models.CharField(max_length=255)
-#     sender = models.ForeignKey(User, related_name='sender', on_delete=models.CASCADE)
-#     date = models.DateTimeField(default=datetime.now())
+class Message(models.Model):
+    content = models.CharField(max_length=255)
+    sender = models.ForeignKey(User, related_name='sender', on_delete=models.CASCADE)
+    date = models.DateTimeField(null=True)
 
-# class Channel(models.Model):
-#     channel_name = models.CharField(max_length=255)
-#     owner = models.ForeignKey(User, related_name='owner',on_delete=models.CASCADE)
-#     users = models.ManyToManyField(User)
-#     messages = models.ManyToManyField(Message)
+class Channel(models.Model):
+    channel_name = models.CharField(max_length=255)
+    owner = models.ForeignKey(User, related_name='owner',on_delete=models.CASCADE, null=True)
+    users = models.ManyToManyField(User, default=[])
+    messages = models.ManyToManyField(Message, default=[])
+    is_dm = models.BooleanField(default=True)
 
 # class Chat(models.Model):
 #     chat_name = models.CharField(max_length=255)

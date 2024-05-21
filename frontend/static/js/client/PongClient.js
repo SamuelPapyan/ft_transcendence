@@ -15,7 +15,7 @@ class PongClient {
     async start(receive_func, disconnect_func, username) {
         console.log("start pong");
         this.user = username;
-        let url = `ws://localhost:8000/ws/pong`;
+        let url = `ws://localhost:8000/pong`;
 
         this._socket = new WebSocket(url);
 
@@ -42,11 +42,12 @@ class PongClient {
         }))
     }
 
-    sendGame() {
-        this._socket.send(JSON.stringify({
-            "method": "game",
-            "user": this.user
-        }))
+    sendGame(userN1) {
+        if (this.user == userN1)
+            this._socket.send(JSON.stringify({
+                "method": "game",
+                "user": this.user
+            }))
     }
 
     onclose(event) {

@@ -8,3 +8,5 @@ frontend/forms/__pycache__
 backend/__pycache__
 backend/migrations/__pycache__
 backend/api_views/__pycache__
+backend/room_classes/__pycache__
+backend/consumers/__pycache__

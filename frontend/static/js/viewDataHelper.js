@@ -1,3 +1,4 @@
+import MatchService from "./services/MatchService.js";
 import UserService from "./services/UserService.js";
 
 export default async function viewDataHelper(page) {
@@ -7,6 +8,14 @@ export default async function viewDataHelper(page) {
                 UserService.getUsers().then(res=>{
                     resolve(res);
                 }).catch(()=>{
+                    resolve(null);
+                })
+            }
+            else if (page == "matches") {
+                MatchService.getOngoingMatches().then(res=>{
+                    resolve(res);
+                }).catch((err)=>{
+                    console.log(err.message);
                     resolve(null);
                 })
             }

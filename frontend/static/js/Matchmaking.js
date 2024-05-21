@@ -1,5 +1,4 @@
 import AbstractComponent from "./AbstractComponent.js";
-import { matchmakingSocket } from "./sockets.js";
 import { client, handleLocation } from "./index.js";
 
 export default class Matchmaking extends AbstractComponent {
@@ -23,9 +22,9 @@ export default class Matchmaking extends AbstractComponent {
     intervalPredicator(){
         const num = +this.countdown.innerText;
         this.countdown.innerText = (num - 1);
-        console.log(this.players);
         if (num - 1 == 0) {
-            client.matchmaking.addToMatch();
+            if (this.user.username === this.players[0])
+                client.matchmaking.addToMatch();
         }
     }
 

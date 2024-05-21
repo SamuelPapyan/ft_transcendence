@@ -1,8 +1,30 @@
 import AbstractComponent from "./AbstractComponent.js";
+import MatchService from "./services/MatchService.js";
 
 export default class Home extends AbstractComponent {
     constructor() {
         super();
+        this.playButton = null;
+    }
+
+    buttonOnClick(event) {
+        event.preventDefault();
+        MatchService.hasOngoinMatch(this.user.username).then(res=>{
+            if (res.success) {
+                if (res.data) {
+                    window.location.assign("/pong");
+                } else {
+                    window.location.assign("/matchmaking");
+                }
+            }
+        }).catch(err=>{
+            console.log(err.message);
+        })
+    }
+
+    activateEventHandlers(){
+        this.playButton = document.querySelector('#lets-play-button')
+        this.playButton.addEventListener('click', this.buttonOnClick.bind(this));
     }
 
     getHtml() {
@@ -28,7 +50,7 @@ export default class Home extends AbstractComponent {
             <h2 class="text-center text-success">Welcome to our legendary Pong game.</h2>
             <div class="mx-auto mb-4 py-5 bg-light d-flex align-items-center justify-content-center">
                 <button class="btn btn-success" style="font-size:100px;">
-                    <a href="/matchmaking" class="text-light text-decoration-none ">LET'S PLAY</a>
+                    <a href="/matchmaking" class="text-light text-decoration-none" id="lets-play-button">LET'S PLAY</a>
                 </button>
             </div>
             <div class="p-2">

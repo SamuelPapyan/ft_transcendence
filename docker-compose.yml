@@ -1,0 +1,55 @@
+version: '3.9'
+
+services:
+  django:
+    container_name: django
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8000:8000
+    volumes:
+      - ${PWD}/django:/django
+    restart: unless-stopped
+    # networks:
+    #   - transcendence
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:latest
+    container_name: postgres 
+    restart: always
+    environment:
+       POSTGRES_USER: postgres
+       POSTGRES_PASSWORD: postgres123
+       POSTGRES_DB: transcendence_db
+       POSTGRES_HOST_AUTH_METHOD: password
+    ports:
+      - 5432:5432
+    # networks:
+    #   - transcendence
+    volumes: 
+    - ./pg_hba.conf:/var/lib/foo/pg_hba.conf
+    command: ["postgres", "-c", "hba_file=/var/lib/foo/pg_hba.conf"]
+
+  nginx:
+    container_name: nginx
+    image: nginx:latest
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/tools:/etc/nginx/ssl/
+      - ./nginx/conf/nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - django
+    restart: always
+
+# networks:
+#   transcendence:
+#     driver: bridge
+
+# volumes:
+#   postgres_db:
+#     driver: local

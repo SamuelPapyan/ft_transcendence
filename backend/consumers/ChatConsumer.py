@@ -3,13 +3,9 @@ from backend.room_classes.ChatRoomClasses import ChatMember
 from backend.room_classes.ChatRoomClasses import ChatRoom
 from backend.room_classes.ChatRoomClasses import ChatRoomManager
 import json
-import datetime
-from backend.models import Channel, Message, User
+from backend.models import Channel, User
 from django.core.serializers.json import DjangoJSONEncoder
-
-def default(o):
-    if isinstance(o, (datetime.date, datetime.datetime)):
-        return o.isoformat()
+from django.db.models import Q
 
 class ChatConsumer(WebsocketConsumer):
     room_manager = ChatRoomManager()
@@ -34,7 +30,8 @@ class ChatConsumer(WebsocketConsumer):
                     msgs.append({
                         "sender": msg.sender.username,
                         "content": msg.content,
-                        "date": msg.date
+                        "date": msg.date,
+                        "invitation": msg.is_invitation
                     })
                 dm_chats.append({
                     "dm_name": dm_name,
@@ -44,19 +41,69 @@ class ChatConsumer(WebsocketConsumer):
                 "type": "dms",
                 "dm_chats": dm_chats
             }, cls=DjangoJSONEncoder))
+        
+        elif obj["type"] == "group chats":
+            group_chats = []
+            u = User.objects.get(username=obj["user"])
+            channels = list(Channel.objects.filter(Q(owner=u) | Q(users=u), is_dm = False).distinct())
+            print("Username:", obj["user"])
+            print("Channels: ", channels)
+            for channel in channels:
+                msgs = []
+                group_chat_name = channel.channel_name
+                messages = list(channel.messages.get_queryset())
+                users = list(channel.users.get_queryset())
+                chat_users = {user.username: False for user in users}
+                for msg in messages:
+                    msgs.append({
+                        "sender": msg.sender.username,
+                        "content": msg.content,
+                        "date": msg.date
+                    })
+                blocked = list(channel.blocked.get_queryset())
+                for member in users:
+                    chat_users[member.username] = member in blocked
+                group_chats.append({
+                    "chat_id": channel.id,
+                    "chat_owner": channel.owner.username,
+                    "channel_name": group_chat_name,
+                    "group_users": chat_users,
+                    "messages": msgs
+                })
+
+            self.send(text_data=json.dumps({
+                "type": "group chats",
+                "group_chats": group_chats
+            }, cls=DjangoJSONEncoder))
+        
         elif obj["type"] == 'connect':
-            print(ChatConsumer.room_manager.rooms)
-            room: ChatRoom = ChatConsumer.room_manager.find_by_dm(obj["dm_user"], obj["user"])
-            if room is not None:
-                room.append(ChatMember(obj["user"], self))
+            if obj["dm"]:
+                room: ChatRoom = ChatConsumer.room_manager.find_by_dm(obj["dm_user"], obj["user"])
+                if room is not None:
+                    if room.get_member(obj["user"]) is None:
+                        room.append(ChatMember(obj["user"], self))
+                else:
+                    print('Creating Room')
+                    room = ChatRoom(dm=obj["dm"])
+                    room.append(ChatMember(obj["user"], self))
+                    ChatConsumer.room_manager.append(room)
+                room.broadcast({
+                    **obj
+                })
             else:
-                print('Creating Room')
-                room = ChatRoom(dm=obj["dm"])
-                room.append(ChatMember(obj["user"], self))
-                ChatConsumer.room_manager.append(room)
-            room.broadcast({
-                **obj
-            })
+                room: ChatRoom = ChatConsumer.room_manager.find_by_group_id(obj["group_id"])
+                if room is not None:
+                    if room.get_member(obj["user"]) is None:
+                        room.append(ChatMember(obj["user"], self))
+                else:
+                    print('Creating Group Room')
+                    room = ChatRoom(dm=False)
+                    room.chat_id = obj["group_id"]
+                    room.append(ChatMember(obj["user"], self))
+                    ChatConsumer.room_manager.append(room)
+                room.broadcast({
+                    **obj
+                })
         elif obj["type"] == 'send':
             room: ChatRoom = ChatConsumer.room_manager.find_by_username(obj["user"])
             room.send_message(obj)
@@ -70,6 +117,39 @@ class ChatConsumer(WebsocketConsumer):
                 room.remove(mem)
                 if room.empty():
                     ChatConsumer.room_manager.remove(room)
+        elif obj["type"] == "create group chat":
+            owner = User.objects.get(username=obj["user"])
+            members = [*User.objects.filter(id__in=obj["members_ids"])]
+            c = Channel(
+                owner = owner,
+                channel_name = obj["gc_name"],
+                is_dm=False,
+            )
+            c.save()
+            c.users.set(members)
+            c.save()
+            self.send(json.dumps({
+                **obj
+            }))
+        elif obj["type"] == "block":
+            c = Channel.objects.get(id=obj["group_id"])
+            u = User.objects.get(username=obj["target"])
+            blocked = [*c.blocked.get_queryset()]
+            if u in blocked:
+                blocked.remove(u)
+            else:
+                blocked.append(u)
+            c.blocked.set(blocked)
+            c.save()
+            room: ChatRoom = ChatConsumer.room_manager.find_by_group_id(obj["group_id"])
+            print(room)
+            print(room.members)
+            if room is not None:
+                room.broadcast({
+                    **obj
+                })
+
+
                 
     def disconnect(self, code):
         print("Disconnect from Chat")

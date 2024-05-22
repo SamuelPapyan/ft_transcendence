@@ -43,11 +43,10 @@ class PongClient {
     }
 
     sendGame(userN1) {
-        if (this.user == userN1)
-            this._socket.send(JSON.stringify({
-                "method": "game",
-                "user": this.user
-            }))
+        this._socket.send(JSON.stringify({
+            "method": "game",
+            "user": this.user
+        }))
     }
 
     onclose(event) {

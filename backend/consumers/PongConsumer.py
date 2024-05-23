@@ -9,19 +9,6 @@ class PongConsumer(WebsocketConsumer):
         self.accept()
         print("Connect: ", PongConsumer.room_manager.rooms)
 
-    def reset_game_data(self):
-        PongConsumer.data = {
-            "game_on": False,
-            "x": 0,
-            "y": 0,
-            "p1_score": 0,
-            "p2_score": 0,
-            "p1_y": 200,
-            "p2_y": 200,
-            "dx": -1,
-            "dy": -1,
-        }
-
     def receive(self, text_data=None, bytes_data=None):
         obj = json.loads(text_data)
         if obj["method"] == 'connect':

@@ -40,13 +40,15 @@ class Message(models.Model):
     content = models.CharField(max_length=255)
     sender = models.ForeignKey(User, related_name='sender', on_delete=models.CASCADE)
     date = models.DateTimeField(null=True)
+    is_invitation = models.BooleanField(default=False)
 
 class Channel(models.Model):
     channel_name = models.CharField(max_length=255)
     owner = models.ForeignKey(User, related_name='owner',on_delete=models.CASCADE, null=True)
-    users = models.ManyToManyField(User, default=[])
+    users = models.ManyToManyField(User, default=[], related_name='chat_memebrs')
     messages = models.ManyToManyField(Message, default=[])
     is_dm = models.BooleanField(default=True)
+    blocked = models.ManyToManyField(User, default=[], related_name='blocked_members')
 
 # class Chat(models.Model):
 #     chat_name = models.CharField(max_length=255)

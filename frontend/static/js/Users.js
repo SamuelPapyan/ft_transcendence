@@ -59,7 +59,6 @@ export default class Users extends AbstractComponent {
             elem.addEventListener('click', this.chatClick.bind(this))
         })
         this.dmSend.addEventListener('click', this.onDmSend.bind(this));
-        $("#chat-view").modal("show")
     }
 
     getUsers(data) {

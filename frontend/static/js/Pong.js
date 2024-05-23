@@ -19,6 +19,7 @@ export default class Pong extends AbstractComponent {
         this.player1FinalScore = null;
         this.player2FinalScore = null;
         this.resultModal = null;
+        this.members = [];
     }
 
     onKeyDown(event) {
@@ -72,7 +73,7 @@ export default class Pong extends AbstractComponent {
         } else if (this.downPressed) {
             client.pong.sendMove(2);
         } else {
-            client.pong.sendGame(members[0]);
+            client.pong.sendGame();
         }
     }
 
@@ -82,7 +83,7 @@ export default class Pong extends AbstractComponent {
 
     onReceive(data) {
         const res = JSON.parse(data)
-        this.players = res.members;
+        this.members = res.members;
         if (res.method === 'connect' || res.method === 'move' || res.method === 'game') {
             if (res.method === 'connect') {
                 if (res.members.length == 2) {

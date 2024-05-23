@@ -6,6 +6,7 @@ export default class Chat extends AbstractComponent {
     static dmUser = null;
     constructor(){
         super();
+        this.groupChatId = null;
         this.chatModal = null;
         this.channels = [];
         this.messages = [];
@@ -21,42 +22,49 @@ export default class Chat extends AbstractComponent {
         this.groupChatNameInput = null;
         this.gcUsersSelect = null;
         this.createGroupChatButton = null;
+        this.groupChatList = null;
+        this.dmMode = true;
+        this.blockedChat = false;
+        this.inviteButton = null;
     }
 
-    createDmItem(data) {
-        const date = new Date(data.messages[data.messages.length - 1].date.split(".")[0])
-        const dateString = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()} | ${date.getHours()} : ${date.getMinutes()}`
-        console.log(dateString)
+    createDmItem(data, dm) {
         return `
         <li class="p-2 border-bottom">
-            <div class="d-flex flex-row dm-item" user=${data.dm_name} style="cursor: pointer;">
+            <div class="d-flex flex-row ${dm ? "dm-item" : "group-item"}" ${dm ? `user=${data.dm_name}` : `group=${data.chat_id}`} style="cursor: pointer;">
             <div>
                 <img
                 src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava1-bg.webp"
-                alt="avatar" class="d-flex align-self-center me-3" width="60" user=${data.dm_name}>
+                alt="avatar" class="d-flex align-self-center me-3" width="60" ${dm ? `user=${data.dm_name}` : `group=${data.chat_id}`}>
                 <span class="badge bg-success badge-dot"></span>
             </div>
             <div class="pt-1">
-                <p user=${data.dm_name} class="${data.dm_name == Chat.dmUser ? "text-success" : "text-light"} fw-bold mb-0">${data.dm_name}</p>
-                <p user=${data.dm_name} class="small text-muted">${data.messages[data.messages.length - 1].content}</p>
+                <p ${dm ? `user=${data.dm_name}` : `group=${data.chat_id}`} class="
+                ${(dm && data.dm_name == Chat.dmUser) ? "text-success" : (!dm && data.chat_id == this.groupChatId ? "text-success" : "text-light")}
+                fw-bold mb-0">${dm ? data.dm_name: data.channel_name}</p>
+                <p ${dm ? `user=${data.dm_name}` : `group=${data.chat_id}`} class="small text-muted chat-item">${data.messages.length ? data.messages[data.messages.length - 1].content : ""}</p>
             </div>
             </div>
             <div class="pt-1">
-            <p user=${data.dm_name} class="small text-muted mb-1"></p>
+            <p ${dm ? `user=${data.dm_name}` : `group=${data.chat_id}`} class="small text-muted mb-1"></p>
             </div>
         </li>
         `
     }
 
     createMessageBox(msg) {
-        console.log(msg)
         const date = new Date(msg.date.split(".")[0])
         const dateString = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()} | ${date.getHours()} : ${date.getMinutes()}`
         if (msg.sender != this.user.username) {
             return `
             <div class="d-flex flex-row justify-content-end">
                 <div>
-                    <p class="text-dark small p-2 me-3 mb-1 rounded-3" style="background-color: #f5f6f7;">${msg.content}</p>
+                    <div class="text-dark small p-2 me-3 mb-1 rounded-3" style="background-color: #f5f6f7;">
+                        <p>${msg.content}</p>
+                        ${msg.invitation ? `
+                            <a href="/matchmaking" class="btn btn-success">Play Pong</a>
+                        ` : ""}
+                    </div>
                     <p class="small me-3 mb-3 rounded-3 text-muted">${dateString}</p>
                 </div>
                 <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava1-bg.webp"
@@ -69,7 +77,12 @@ export default class Chat extends AbstractComponent {
                 <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava6-bg.webp"
                     alt="avatar 1" style="width: 45px; height: 100%;">
                 <div>
-                    <p class="small p-2 ms-3 mb-1 rounded-3 bg-success text-light">${msg.content}</p>
+                    <div class="bg-success small p-2 ms-3 mb-1 rounded-3 text-light">
+                        <p>${msg.content}</p>
+                        ${msg.invitation ? `
+                            <p href="/matchmaking" class="small text-light">You invited ${msg.dm_name} to Pong.</p>
+                        ` : ""}
+                    </div>
                     <p class="small ms-3 mb-3 rounded-3 text-muted float-end">${dateString}</p>
                 </div>
             </div>
@@ -83,9 +96,22 @@ export default class Chat extends AbstractComponent {
         })
     }
 
+    fillBlockedChatZone(){
+        this.chatZone.innerHTML = `
+            <div class="w-100 h-100 d-flex justify-content-center align-items-center">
+                <p class="text-light bold">You have been blocked by the chat owner.</p>
+            </div>
+        `
+    }
+
     switchDM(event){
         Chat.dmUser = event.target.getAttribute('user');
-        this.disconnect(true);
+        this.disconnect(true, false);
+    }
+
+    switchGroup(event){
+        this.groupChatId = event.target.getAttribute('group');
+        this.disconnect(false, true);
     }
 
     onConnect() {
@@ -95,15 +121,26 @@ export default class Chat extends AbstractComponent {
         }))
     }
 
+    blockUser(event) {
+        const user = event.target.getAttribute('user');
+        console.log(user);
+        this.socket.send(JSON.stringify({
+            type: "block",
+            user: this.user.username,
+            group_id: this.groupChatId,
+            target: user
+        }))
+    }
+
     onMessage(event) {
         const data = JSON.parse(event.data);
-        console.log(data);
         if (data.type == 'dms') {
+            this.inviteButton.classList.remove('collapse')
             this.dmList.innerHTML = ""
             data.dm_chats.forEach(chat=>{
                 if (!Chat.dmUser)
                     Chat.dmUser = chat.dm_name;
-                this.dmList.innerHTML += this.createDmItem(chat);
+                this.dmList.innerHTML += this.createDmItem(chat, true);
                 if (chat.dm_name == Chat.dmUser) {
                     this.fillChatZone(chat.messages);
                 }
@@ -120,23 +157,109 @@ export default class Chat extends AbstractComponent {
             }))
         }
         if (data.type == 'connect') {
-            
+            if (data.user == this.user.username) {
+                this.dmMode = data.dm;
+            }
         }
         if (data.type == 'send') {
-            this.chatZone.innerHTML += this.createMessageBox(data)
-            this.chatZone.scrollTop = this.chatZone.scrollHeight;
+            console.log()
+            if (!this.blockedChat) {
+                if (Chat.dmUser == data.sender || !this.dmMode && data.group_id == this.groupChatId || this.user.username == data.sender) {
+                    this.chatZone.innerHTML += this.createMessageBox(data)
+                    this.chatZone.scrollTop = this.chatZone.scrollHeight;
+                }
+            }
+            if (this.dmMode) {
+                let x;
+                x = document.querySelector(`.chat-item[user="${data.dm_name}"]`);
+                console.log(x);
+                if (!x)
+                    x = document.querySelector(`.chat-item[user="${data.sender}"]`)
+                x.innerText = data.content;
+            }
+            else {
+                if (!this.blockedChat)
+                    document.querySelector(`.chat-item[group="${data.group_id}"]`).innerText = data.content;
+            }
         }
         if (data.type == 'disconnect') {
-            console.log(data.user, this.user.username)
-            console.log(data)
             if (data.user == this.user.username) {
                 if (data.switchDm) {
-                    console.log("Send Machine")
                     this.socket.send(JSON.stringify({
                         "type": "dms",
                         "user": this.user.username
                     }))
                 }
+                if (data.switchGroup) {
+                    this.socket.send(JSON.stringify({
+                        "type": "group chats",
+                        "user": this.user.username
+                    }))
+                }
+            }
+        }
+        if (data.type == 'create group chat') {
+            this.socket.send(JSON.stringify({
+                "type": "group chats",
+                "user": this.user.username
+            }))
+        }
+        if (data.type == 'group chats') {
+            this.inviteButton.classList.add('collapse');
+            document.querySelector('#gc-list-view').style.height = "400px"
+            document.querySelector('#group-users-view').classList.add("collapse");
+            this.groupChatList.innerHTML = "";
+            data.group_chats.forEach(chat=>{
+                if (!this.groupChatId)
+                    this.groupChatId = chat.chat_id;
+                this.groupChatList.innerHTML += this.createDmItem(chat, false);
+                if (chat.group_users[this.user.username])
+                    document.querySelector(`.chat-item[group="${chat.chat_id}"]`).innerText = "(you are blocked from this chat)";
+                if (chat.chat_id == this.groupChatId) {
+                    if (chat.group_users[this.user.username]) {
+                        this.fillBlockedChatZone();
+                        this.chatInput.setAttribute('disabled', '');
+                        this.blockedChat = true;
+                    } else {
+                        this.fillChatZone(chat.messages);
+                        this.chatInput.removeAttribute('disabled');
+                        this.blockedChat = false;
+                    }
+                }
+                if (chat.chat_owner === this.user.username && chat.chat_id == this.groupChatId) {
+                    document.querySelector('#gc-list-view').style.height = "200px"
+                    document.querySelector('#group-users-view').classList.remove("collapse");
+                    const x = document.querySelector('#group-users');
+                    x.innerHTML = "";
+                    Object.entries(chat.group_users).forEach(v=>{
+                        x.innerHTML += `<div class="d-flex justify-content-evenly pb-1">
+                                            <p class="bold text-light">${v[0]}</p>
+                                            <button class="btn ${v[1] ? "btn-outline-success" : "btn-success"} user-block-item" user="${v[0]}">${v[1] ? "Unblock" : "Block"}</button>
+                                        </div>`;
+                        [...document.querySelectorAll('.user-block-item')].forEach(elem=>{
+                            elem.addEventListener('click', this.blockUser.bind(this));
+                        })
+                    })
+                }
+            });
+            [...document.querySelectorAll('.group-item')].forEach(elem=>{
+                elem.addEventListener('click', this.switchGroup.bind(this))
+            })
+            this.chatZone.scrollTop = this.chatZone.scrollHeight;
+            this.socket.send(JSON.stringify({
+                "type": "connect",
+                "user": this.user.username,
+                "dm": false,
+                "group_id": this.groupChatId
+            }))
+        }
+        if (data.type == 'block') {
+            console.log(data);
+            if (data.user == this.user.username || data.target == this.user.username && !this.dmMode) {
+                this.socket.send(JSON.stringify({
+                    "type": "group chats",
+                    "user": this.user.username
+                }));
             }
         }
     }
@@ -150,28 +273,37 @@ export default class Chat extends AbstractComponent {
                 console.log("closed.");
             }
         } else {
-            this.socket.send(JSON.stringify({
-                "type": "dms",
-                "user": this.user.username
-            }))
+            if (this.dmMode) {
+                this.socket.send(JSON.stringify({
+                    "type": "dms",
+                    "user": this.user.username
+                }))
+            } else {
+                this.socket.send(JSON.stringify({
+                    "type": "group chats",
+                    "user": this.user.username
+                }))
+            }
         }
     }
 
     onHidden() {
-        console.log("hidden")
-        this.disconnect(false);
+        this.disconnect(false, false);
     }
 
     sendMessage(){
         const content = this.chatInput.value;
-        console.log(content);
-        this.socket.send(JSON.stringify({
-            "type": "send",
-            "user": this.user.username,
-            "dm_user": Chat.dmUser,
-            "content": content
-        }));
-        this.chatInput.value = "";
+        if (content) {
+            this.socket.send(JSON.stringify({
+                "type": "send",
+                "user": this.user.username,
+                "dm_user": Chat.dmUser,
+                "group_id": this.groupChatId,
+                "content": content,
+                "dm": this.dmMode
+            }));
+            this.chatInput.value = "";
+        }
     }
 
     toggleChats(event) {
@@ -182,6 +314,8 @@ export default class Chat extends AbstractComponent {
             this.groupChatsButton.classList.add("btn-outline-success")
             this.dmChatsContent.classList.remove('collapse')
             this.groupChatsContent.classList.add('collapse')
+            this.disconnect(true, false);
+            this.blockedChat = false;
         }
         if (event.target == this.groupChatsButton) {
             this.dmChatsButton.classList.add("btn-outline-success")
@@ -190,17 +324,23 @@ export default class Chat extends AbstractComponent {
             this.groupChatsButton.classList.remove("btn-outline-success")
             this.dmChatsContent.classList.add('collapse')
             this.groupChatsContent.classList.remove('collapse')
+            this.disconnect(false, true);
         }
     }
 
     createGroupChat(){
-        console.log("Group Chat Name: ", this.groupChatNameInput.value);
-        console.log("Selected Users:", getSelectValues(this.gcUsersSelect));
+        const groupChatName = this.groupChatNameInput.value;
+        const userIds = getSelectValues(this.gcUsersSelect).map(v=>+v);
+        this.socket.send(JSON.stringify({
+            type: "create group chat",
+            user: this.user.username,
+            gc_name: groupChatName,
+            members_ids: userIds
+        }))
     }
 
     fillGcUsersSelect() {
         UserService.getUsers().then(res=>{
-            console.log(res);
             res.forEach(v=>{
                 this.gcUsersSelect.innerHTML += `<option value="${v.id}">${v.username}</option>`
             })
@@ -222,6 +362,8 @@ export default class Chat extends AbstractComponent {
         this.groupChatNameInput = document.querySelector('#group-chat-name-input')
         this.gcUsersSelect = document.querySelector('#gc-users-select')
         this.createGroupChatButton = document.querySelector('#create-group-chat-button')
+        this.groupChatList = document.querySelector('#gc-list')
+        this.inviteButton = document.querySelector('#invite-button')
 
         this.chatModal.addEventListener('hidden.bs.modal', this.onHidden.bind(this))
         this.chatModal.addEventListener('shown.bs.modal', this.onShown.bind(this))
@@ -229,22 +371,40 @@ export default class Chat extends AbstractComponent {
         this.dmChatsButton.addEventListener('click', this.toggleChats.bind(this))
         this.groupChatsButton.addEventListener('click', this.toggleChats.bind(this))
         this.createGroupChatButton.addEventListener('click', this.createGroupChat.bind(this))
+        this.inviteButton.addEventListener('click', this.sendInvitation.bind(this));
         window.addEventListener('beforeunload', this.onBeforeUnload.bind(this))
 
         this.fillGcUsersSelect()
     }
 
-    onBeforeUnload(){
-        this.disconnect(false);
+    sendInvitation() {
+        const content = this.chatInput.value;
+        if (content) {
+            this.socket.send(JSON.stringify({
+                "type": "send",
+                "user": this.user.username,
+                "dm_user": Chat.dmUser,
+                "group_id": this.groupChatId,
+                "content": content,
+                "dm": this.dmMode,
+                "invitation": true,
+            }));
+            this.chatInput.value = "";
+        }
     }
 
-    disconnect(switchDm) {
+    onBeforeUnload(){
+        this.disconnect(false, false);
+    }
+
+    disconnect(switchDm, switchGroup) {
         if (this.socket && this.socket.readyState == this.socket.OPEN) {
             console.log("discarded as always")
             this.socket.send(JSON.stringify({
                 type: "disconnect",
                 user: this.user.username,
-                switchDm: switchDm 
+                switchDm: switchDm,
+                switchGroup: switchGroup
             }))
         }
     }
@@ -296,10 +456,16 @@ export default class Chat extends AbstractComponent {
                             </span>
                             </div>
         
-                            <div data-mdb-perfect-scrollbar="true" style="position: relative; height: 400px">
+                            <div id="gc-list-view" data-mdb-perfect-scrollbar="true" style="position: relative; height: 400px; overflow:auto;">
                             <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#createGroupChatModal">Add Group Chat</button>
-                            <ul class="list-unstyled mb-0">
+                            <ul id="gc-list" class="list-unstyled mb-0">
                             </ul>
+                            </div>
+                            <div id="group-users-view" class="collapse" data-mdb-perfect-scrollbar="true" style="position: relative; height: 200px; overflow:auto">
+                                <h3 class="text-center text-success">Group Users</h3>
+                                <div id="group-users">
+
+                                </div>
                             </div>
                         </div>
 
@@ -314,6 +480,7 @@ export default class Chat extends AbstractComponent {
                             alt="avatar 3" style="width: 40px; height: 100%;">
                             <input type="text" class="form-control form-control-lg" id="chat-input"
                             placeholder="Type message">
+                            <button id="invite-button" class="btn btn-success ms-3 pointer collapse">Invite!</button>
                             <button id="send-button" class="btn btn-success ms-3 pointer">Send!</button>
                         </div>
                         </div>

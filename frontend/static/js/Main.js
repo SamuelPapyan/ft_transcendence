@@ -9,6 +9,7 @@ import Matchmaking from "./Matchmaking.js";
 import Pong from "./Pong.js";
 import viewDataHelper from "./viewDataHelper.js";
 import Chat from "./Chat.js";
+import TournamentMatchmaking from "./TournamentMatchmaking.js"
 
 export default class Main extends AbstractPage {
     constructor(title, page){
@@ -24,7 +25,8 @@ export default class Main extends AbstractPage {
             'matches': new Matches(this.user),
             'matchmaking': new Matchmaking(),
             'pong': new Pong(this.user),
-            'chat': new Chat()
+            'chat': new Chat(),
+            'matchmaking-tournament': new TournamentMatchmaking()
         }
     }
 

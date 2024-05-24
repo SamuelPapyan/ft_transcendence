@@ -42,6 +42,14 @@ class PongClient {
         }))
     }
 
+    createNextMatch(nextUser) {
+        this._socket.send(JSON.stringify({
+            "method": "next",
+            "user": this.user,
+            "next_user": nextUser,
+        }))
+    }
+
     sendGame(userN1) {
         this._socket.send(JSON.stringify({
             "method": "game",

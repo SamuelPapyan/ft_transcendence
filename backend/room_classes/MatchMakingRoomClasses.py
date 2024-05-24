@@ -28,7 +28,6 @@ class WaitingRoom(AbstractRoom):
                 "method": "refuse",
                 "user": waiter.username,
             })
-            self.remove(tmp)
             return True
         self.members.append(waiter)
         return False

@@ -20,6 +20,12 @@ export default class Pong extends AbstractComponent {
         this.player2FinalScore = null;
         this.resultModal = null;
         this.members = [];
+        this.opponentName = null;
+        this.nextOpponent = null;
+        this.nextOpponentMessage = null;
+        this.countdown = null;
+        this.nextTourModal = null;
+        this.countdownInterval = null;
     }
 
     onKeyDown(event) {
@@ -81,6 +87,23 @@ export default class Pong extends AbstractComponent {
         this.interval = setInterval(this.intervalPredicator.bind(this), 1);
     }
 
+    countdownIntervalPredicator(){
+        const num =  +this.countdown.innerText;
+        this.countdown.innerText = (num - 1);
+        if (num - 1 == 0) {
+            client.pong.createNextMatch(this.opponentName.innerText)
+        }
+    }
+
+    startNextRound(){
+        this.countdown.innerText = 5;
+        this.countdownInterval = setInterval(this.countdownIntervalPredicator.bind(this), 1000);
+    }
+
+    endNextRound(){
+        clearInterval(this.countdownInterval);
+    }
+
     onReceive(data) {
         const res = JSON.parse(data)
         this.members = res.members;
@@ -104,6 +127,21 @@ export default class Pong extends AbstractComponent {
             }
             this.renderPong(res.game_data, res.members, res.final_scores);
         }
+        else if (res.method === 'waiting') {
+            clearInterval(this.interval);
+            this.nextTourModal.style.display = "block";
+        }
+        else if (res.method === 'next_match') {
+            this.nextTourModal.style.display = "block";
+            this.nextOpponentMessage.innerText = 'Your next opponent is ';
+            this.nextOpponent.innerText = res.next_user;
+            this.opponentName.innerText = res.next_user;
+            this.startNextRound();
+        }
+        else if (res.method === 'next') {
+            clearInterval(this.countdownInterval);
+            window.location.reload();
+        }
         else if (res.method === 'disconnect'){
             this.player2.innerText = "??????";
             clearInterval(this.interval);
@@ -126,11 +164,11 @@ export default class Pong extends AbstractComponent {
         this.player1FinalScore = document.querySelector('#player1FinalScore');
         this.player2FinalScore = document.querySelector('#player2FinalScore');
         this.resultModal = document.querySelector('#resultModal');
-        if (window.history.state?.players) {
-            client.matchmaking.clientLeave();
-            client.matchmaking.stop();
-            this.player2.innerText = window.history.state.players.find(val => val !== this.user.username)
-        }
+        this.nextTourModal = document.querySelector('#nextTourModal');
+        this.opponentName = document.querySelector('#opponentName');
+        this.nextOpponent = document.querySelector('#nextOpponent');
+        this.nextOpponentMessage = document.querySelector('#nextOpponentMessage');
+        this.countdown = document.querySelector('#countdown');
         document.addEventListener('keyup', this.onKeyUp.bind(this));
         document.addEventListener('keydown', this.onKeyDown.bind(this));
         this.startPong();
@@ -165,6 +203,26 @@ export default class Pong extends AbstractComponent {
                 </div>
                 <div class="modal-footer border-success d-flex justify-content-center">
                     <button type="button" class="btn btn-success"><a href="/" class="text-decoration-none text-light">Ok</a></button>
+                </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal" style="display:none;" tabindex="-1" id="nextTourModal">
+            <div class="modal-dialog modal-dialog-center">
+                <div class="modal-content bg-dark">
+                <div class="modal-body">
+                    <h3 class="text-success text-center"><span id="nextOpponentMessage">Waiting for the next opponent</span><span id="opponentName">...</span></h3>
+                    <div class="d-flex justify-content-evenly row">
+                        <div class="col-4 border border-success rounded">
+                            <h3 class="text-center text-success">${this.user.username}</h3>
+                        </div>
+                        <div class="col-4 border border-success rounded">
+                            <h3 id="nextOpponent" class="text-center text-danger">Player 2</h3>
+                        </div>
+                        <div class="d-flex justify-content-center align-items-center">
+                            <p class="text-success bold" id="countdown"></span>
+                        </div>
+                    </div>
                 </div>
                 </div>
             </div>

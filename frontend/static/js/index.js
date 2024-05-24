@@ -48,6 +48,10 @@ const routes = {
         view: new Main("Pong", "pong"),
         protected: true,
     },
+    "/matchmaking/tournament": {
+        view: new Main("Tournament Making", "matchmaking-tournament"),
+        protected: true,
+    },
     404: {
         view: new Page404("Page not found"),
     }

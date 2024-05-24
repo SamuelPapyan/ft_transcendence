@@ -3,6 +3,7 @@ from datetime import datetime
 from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext_lazy as _
 from .managers import CustomUserManager
+from friendship.models import Friend, FriendshipRequest
 
 class User(AbstractUser):
     MALE = 'Male'
@@ -34,6 +35,8 @@ class Match(models.Model):
     end = models.DateTimeField(null=True)
     winner = models.ForeignKey(User, related_name='winner_player', on_delete=models.CASCADE, null=True, blank=True)
     is_ongoing = models.BooleanField(default=True)
+    is_tournament = models.BooleanField(default=False)
+    awaiting_players = models.ManyToManyField(User, related_name='awaiting_players', default=[])
 
 
 class Message(models.Model):

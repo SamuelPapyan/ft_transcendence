@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'backend.apps.BackendConfig',
     'frontend',
+    'friendship',
 ]
 
 CHANNELS_LAYER = {
@@ -96,10 +97,10 @@ ASGI_APPLICATION = 'ft_transcendence.asgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'transcendence_db',
+        'NAME': 'postgres',
         'USER': 'postgres',
         'PASSWORD': 'postgres123',
-        'HOST': 'postgres',
+        'HOST': 'localhost',
         'PORT': '5432',
     }
 }

@@ -17,6 +17,7 @@ from django.urls import path
 from backend.consumers.PongConsumer import PongConsumer
 from backend.consumers.MatchMakingConsumer import MatchMakingConsumer
 from backend.consumers.ChatConsumer import ChatConsumer
+from backend.consumers.TournamentMakingConsumer import TournamentMakingConsumer
 
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ft_transcendence.settings')
@@ -30,6 +31,7 @@ application = ProtocolTypeRouter({
             path('matchmaking', MatchMakingConsumer.as_asgi()),
             path('pong', PongConsumer.as_asgi()),
             path('chat', ChatConsumer.as_asgi()),
+            path('matchmaking/tournament', TournamentMakingConsumer.as_asgi())
         ])
     )
 })

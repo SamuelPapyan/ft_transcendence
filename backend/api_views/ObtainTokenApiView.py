@@ -16,7 +16,6 @@ class ObtainTokenView(views.APIView):
     serializer_class = ObtainTokenSerializer
 
     def post(self, request, *args, **kwargs):
-        print(request.data)
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -31,7 +30,7 @@ class ObtainTokenView(views.APIView):
                 'message': 'Invalid credentials'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        jwt_token = JWTAuthentication.create_jwt(user)
+        jwt_token = JWTAuthentication.create_jwt(user, True)
 
         return Response({
             'success': True,
@@ -45,6 +44,8 @@ class ObtainTokenView(views.APIView):
             token = token.split(' ')[1]
             try:
                 payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+                user = User.objects.get(username=payload["username"])
+                payload["avatar"] = user.avatar
             except jwt.exceptions.InvalidSignatureError:
                 raise AuthenticationFailed('Invalid signature')
             except:

@@ -72,6 +72,12 @@ export default class TournamentMatchmaking extends AbstractComponent{
                 v.innerText = res.members[i];
             else
                 v.innerText = "??????";
+        });
+        [...document.querySelectorAll('.user-image')].forEach((v, i)=>{
+            if (i < res.members.length)
+                v.src = `data:image/png;base64,${res.avatars[i]}`
+            else
+                v.src = "/static/imgs/avatar_default.png";
         })
         if (res.method === 'connect') {
             if (res.members.length == 4) {
@@ -86,7 +92,7 @@ export default class TournamentMatchmaking extends AbstractComponent{
     }
 
     onDisconnect(event) {
-        console.log("Disconnecting from Tournament");
+        // console.log("Disconnecting from Tournament");
     }
 
     activateEventHandlers() {
@@ -103,14 +109,14 @@ export default class TournamentMatchmaking extends AbstractComponent{
                 <div class="d-flex justify-content-evenly align-items-center">
                     <div>
                         <div class="d-flex justify-content-center">
-                            <img class="w-50 rounded-circle" src="/static/imgs/avatar_default.png" alt=""/>
+                            <img class="w-50 rounded-circle user-image" src="/static/imgs/avatar_default.png" alt=""/>
                         </div>
                         <h3 class="player-label text-success text-center">??????</h3>
                     </div>
                     <h3 class="text-light">VS</h3>
                     <div>
                         <div class="d-flex justify-content-center">
-                            <img class="w-50 rounded-circle" src="/static/imgs/avatar_default.png" alt=""/>
+                            <img class="w-50 rounded-circle user-image" src="/static/imgs/avatar_default.png" alt=""/>
                         </div>
                         <h3 class="player-label text-success text-center">??????</h3>
                     </div>
@@ -118,14 +124,14 @@ export default class TournamentMatchmaking extends AbstractComponent{
                 <div class="d-flex justify-content-evenly align-items-center">
                     <div>
                         <div class="d-flex justify-content-center">
-                            <img class="w-50 rounded-circle" src="/static/imgs/avatar_default.png" alt=""/>
+                            <img class="w-50 rounded-circle user-image" src="/static/imgs/avatar_default.png" alt=""/>
                         </div>
                         <h3 class="player-label text-success text-center">??????</h3>
                     </div>
                     <h3 class="text-light">VS</h3>
                     <div>
                         <div class="d-flex justify-content-center">
-                            <img class="w-50 rounded-circle" src="/static/imgs/avatar_default.png" alt=""/>
+                            <img class="w-50 rounded-circle user-image" src="/static/imgs/avatar_default.png" alt=""/>
                         </div>
                         <h3 class="player-label text-success text-center">??????</h3>
                     </div>

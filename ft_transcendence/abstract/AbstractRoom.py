@@ -31,5 +31,8 @@ class AbstractRoom:
     def usernames(self):
         return [member.username for member in self.members]
     
+    def avatars(self):
+        return [member.avatar for member in self.members]
+    
     def __len__(self):
         return len(self.members)

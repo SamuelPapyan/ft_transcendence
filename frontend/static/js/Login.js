@@ -5,9 +5,10 @@ export default class Login extends AbstractPage {
     constructor(title, isValid) {
         super(title);
         this.isValid = isValid;
+        this.login42 = null;
     }
 
-    static validateEnter(username, password) {
+    validateEnter(username, password) {
         AuthService.login({
             username: username,
             password: password,
@@ -21,15 +22,25 @@ export default class Login extends AbstractPage {
             }
             
         }).catch(err=>{
-            console.log(err.message);
+            // console.log(err.message);
         })
+    }
+
+    async redirectToLogin42(event) {
+        event.preventDefault();
+        try {
+            const res = await AuthService.getLogin42Url();
+            window.location.assign(res);
+        } catch (err) {
+            // console.log(err.message);
+        }
     }
 
     submitForm(event) {
         event.preventDefault();
         const $username = document.querySelector('#username');
         const $password = document.querySelector('#password');
-        Login.validateEnter($username.value, $password.value);
+        this.validateEnter($username.value, $password.value);
     }
 
     render(masterView) {
@@ -42,7 +53,9 @@ export default class Login extends AbstractPage {
             $password.value = window.history.state?.password;
         }
         const $form = document.querySelector('#login-form');
-        $form.addEventListener('submit', this.submitForm);
+        this.login42 = document.querySelector('#login-42');
+        this.login42.addEventListener('click', this.redirectToLogin42.bind(this))
+        $form.addEventListener('submit', this.submitForm.bind(this));
         window.history.replaceState(null, null, '/login');
     }
 
@@ -69,6 +82,7 @@ export default class Login extends AbstractPage {
                     <div class="d-flex justify-content-between">
                         <button type="submit" class="btn btn-success">Login</button>
                         <span><span class="text-light">Don't have account, </span><a href="/signup" class="text-success">Sign Up</a></span>
+                        <p><a id="login-42" href="/login42" class="text-success">Login via 42</a></p>
                     </div>
                 </form>
             </div>

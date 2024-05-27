@@ -88,4 +88,4 @@ class PongConsumer(WebsocketConsumer):
 
     
     def disconnect(self, code):
-        print("Disconnect from Pong")
+        pass

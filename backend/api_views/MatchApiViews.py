@@ -40,9 +40,28 @@ class MatchApiViews:
     @permission_classes((permissions.AllowAny,))
     def has_ongoing_match(request, username):
         u = User.objects.get(username=username)
-        exists = Match.objects.filter(Q(p1=u) | Q(p2=u), is_ongoing=True).exists()
+        exists_1 = Match.objects.filter(Q(p1=u) | Q(p2=u), is_ongoing=True).exists()
+        exists_2 = Match.objects.filter(winner=u, is_tournament=True).exists()
         return Response({
                 'success': True,
-                'data': exists,
+                'data': exists_1 or exists_2,
                 'message': 'Is the user\'s match ongoing?'
             },status=status.HTTP_200_OK)
+    
+    @api_view(['GET'])
+    @permission_classes((permissions.IsAuthenticated,))
+    def get_user_match_history(request, username):
+        match_history = []
+        user = User.objects.get(username=username)
+        matches = Match.objects.filter(Q(p1=user) | Q(p2=user))
+        for m in matches:
+            match_history.append({
+                "p1": m.p1.username,
+                "p2": m.p2.username,
+                "p1_score":m.p1_score,
+                "p2_score":m.p2_score,
+                "winner": m.winner.username,
+                "start": m.start.strftime("%d/%m/%Y | %H:%M:%S"),
+                "end": m.end.strftime("%d/%m/%Y | %H:%M:%S"),
+            })
+        return Response(match_history, status=status.HTTP_200_OK)

@@ -4,6 +4,7 @@ import UserService from "./services/UserService.js";
 
 export default class Chat extends AbstractComponent {
     static dmUser = null;
+    static dmMode = true;
     constructor(){
         super();
         this.groupChatId = null;
@@ -23,7 +24,6 @@ export default class Chat extends AbstractComponent {
         this.gcUsersSelect = null;
         this.createGroupChatButton = null;
         this.groupChatList = null;
-        this.dmMode = true;
         this.blockedChat = false;
         this.inviteButton = null;
     }
@@ -33,8 +33,7 @@ export default class Chat extends AbstractComponent {
         <li class="p-2 border-bottom">
             <div class="d-flex flex-row ${dm ? "dm-item" : "group-item"}" ${dm ? `user=${data.dm_name}` : `group=${data.chat_id}`} style="cursor: pointer;">
             <div>
-                <img
-                src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava1-bg.webp"
+                <img src="${data.avatar ? `data:image/png;base64,${data.avatar}` : "/static/imgs/avatar_default.png"}"
                 alt="avatar" class="d-flex align-self-center me-3" width="60" ${dm ? `user=${data.dm_name}` : `group=${data.chat_id}`}>
                 <span class="badge bg-success badge-dot"></span>
             </div>
@@ -65,16 +64,16 @@ export default class Chat extends AbstractComponent {
                             <a href="/matchmaking" class="btn btn-success">Play Pong</a>
                         ` : ""}
                     </div>
-                    <p class="small me-3 mb-3 rounded-3 text-muted">${dateString}</p>
+                    <p class="small me-3 mb-3 rounded-3 text-muted">${dateString} | <a class="profile-link text-dcoreation-none text-success" href="/profile">${msg.sender}</a></p>
                 </div>
-                <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava1-bg.webp"
+                <img src="${msg.avatar ? `data:image/png;base64,${msg.avatar}` : "/static/imgs/avatar_default.png"}"
                     alt="avatar 1" style="width: 45px; height: 100%;">
             </div>
         `
         }
         return `
             <div class="d-flex flex-row justify-content-start">
-                <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava6-bg.webp"
+                <img src="${msg.avatar ? `data:image/png;base64,${this.user.avatar}` : "/static/imgs/avatar_default.png"}"
                     alt="avatar 1" style="width: 45px; height: 100%;">
                 <div>
                     <div class="bg-success small p-2 ms-3 mb-1 rounded-3 text-light">
@@ -83,7 +82,7 @@ export default class Chat extends AbstractComponent {
                             <p href="/matchmaking" class="small text-light">You invited ${msg.dm_name} to Pong.</p>
                         ` : ""}
                     </div>
-                    <p class="small ms-3 mb-3 rounded-3 text-muted float-end">${dateString}</p>
+                    <p class="small ms-3 mb-3 rounded-3 text-muted float-end"><a class="profile-link text-dcoreation-none text-success" href="/profile">${msg.sender}</a> | ${dateString}</p>
                 </div>
             </div>
         `
@@ -123,7 +122,6 @@ export default class Chat extends AbstractComponent {
 
     blockUser(event) {
         const user = event.target.getAttribute('user');
-        console.log(user);
         this.socket.send(JSON.stringify({
             type: "block",
             user: this.user.username,
@@ -158,21 +156,19 @@ export default class Chat extends AbstractComponent {
         }
         if (data.type == 'connect') {
             if (data.user == this.user.username) {
-                this.dmMode = data.dm;
+                Chat.dmMode = data.dm;
             }
         }
         if (data.type == 'send') {
-            console.log()
             if (!this.blockedChat) {
-                if (Chat.dmUser == data.sender || !this.dmMode && data.group_id == this.groupChatId || this.user.username == data.sender) {
+                if (Chat.dmUser == data.sender || !Chat.dmMode && data.group_id == this.groupChatId || this.user.username == data.sender) {
                     this.chatZone.innerHTML += this.createMessageBox(data)
                     this.chatZone.scrollTop = this.chatZone.scrollHeight;
                 }
             }
-            if (this.dmMode) {
+            if (Chat.dmMode) {
                 let x;
                 x = document.querySelector(`.chat-item[user="${data.dm_name}"]`);
-                console.log(x);
                 if (!x)
                     x = document.querySelector(`.chat-item[user="${data.sender}"]`)
                 x.innerText = data.content;
@@ -213,10 +209,10 @@ export default class Chat extends AbstractComponent {
                 if (!this.groupChatId)
                     this.groupChatId = chat.chat_id;
                 this.groupChatList.innerHTML += this.createDmItem(chat, false);
-                if (chat.group_users[this.user.username])
+                if (chat.group_users[this.user.username] && chat.group_users[this.user.username].blocked)
                     document.querySelector(`.chat-item[group="${chat.chat_id}"]`).innerText = "(you are blocked from this chat)";
                 if (chat.chat_id == this.groupChatId) {
-                    if (chat.group_users[this.user.username]) {
+                    if (chat.group_users[this.user.username] && chat.group_users[this.user.username].blocked) {
                         this.fillBlockedChatZone();
                         this.chatInput.setAttribute('disabled', '');
                         this.blockedChat = true;
@@ -234,7 +230,7 @@ export default class Chat extends AbstractComponent {
                     Object.entries(chat.group_users).forEach(v=>{
                         x.innerHTML += `<div class="d-flex justify-content-evenly pb-1">
                                             <p class="bold text-light">${v[0]}</p>
-                                            <button class="btn ${v[1] ? "btn-outline-success" : "btn-success"} user-block-item" user="${v[0]}">${v[1] ? "Unblock" : "Block"}</button>
+                                            <button class="btn ${v[1].blocked ? "btn-outline-success" : "btn-success"} user-block-item" user="${v[0]}">${v[1].blocked ? "Unblock" : "Block"}</button>
                                         </div>`;
                         [...document.querySelectorAll('.user-block-item')].forEach(elem=>{
                             elem.addEventListener('click', this.blockUser.bind(this));
@@ -254,31 +250,42 @@ export default class Chat extends AbstractComponent {
             }))
         }
         if (data.type == 'block') {
-            console.log(data);
-            if (data.user == this.user.username || data.target == this.user.username && !this.dmMode) {
+            if (data.user == this.user.username || data.target == this.user.username && !Chat.dmMode) {
                 this.socket.send(JSON.stringify({
                     "type": "group chats",
                     "user": this.user.username
                 }));
             }
         }
+        [...document.querySelectorAll('.profile-link')].forEach(elem=>{
+            elem.addEventListener('click', this.profileLinkOnClick.bind(this));
+        })
     }
 
-    onShown(){
+    profileLinkOnClick(event){
+        event.preventDefault();
+        const profileUser = event.target.innerText;
+        history.pushState({username: profileUser}, null, '/profile');
+        location.assign('/profile');
+    }
+
+    onShow(){
         if (!this.socket) {
             this.socket = new WebSocket('ws://localhost:8000/chat')
             this.socket.onopen = this.onConnect.bind(this);
             this.socket.onmessage = this.onMessage.bind(this);
-            this.socket.onclose = function() {
-                console.log("closed.");
-            }
+            // this.socket.onclose = function() {
+            //     console.log("closed.");
+            // }
         } else {
-            if (this.dmMode) {
+            if (Chat.dmMode) {
+                this.setDMList();
                 this.socket.send(JSON.stringify({
                     "type": "dms",
                     "user": this.user.username
                 }))
             } else {
+                this.setGCList();
                 this.socket.send(JSON.stringify({
                     "type": "group chats",
                     "user": this.user.username
@@ -300,15 +307,14 @@ export default class Chat extends AbstractComponent {
                 "dm_user": Chat.dmUser,
                 "group_id": this.groupChatId,
                 "content": content,
-                "dm": this.dmMode
+                "dm": Chat.dmMode
             }));
             this.chatInput.value = "";
         }
     }
 
-    toggleChats(event) {
-        if (event.target == this.dmChatsButton) {
-            this.dmChatsButton.classList.remove("btn-outline-success")
+    setDMList() {
+        this.dmChatsButton.classList.remove("btn-outline-success")
             this.dmChatsButton.classList.add("btn-success")
             this.groupChatsButton.classList.remove("btn-success")
             this.groupChatsButton.classList.add("btn-outline-success")
@@ -316,15 +322,24 @@ export default class Chat extends AbstractComponent {
             this.groupChatsContent.classList.add('collapse')
             this.disconnect(true, false);
             this.blockedChat = false;
+    }
+
+    setGCList() {
+        this.dmChatsButton.classList.add("btn-outline-success")
+        this.dmChatsButton.classList.remove("btn-success")
+        this.groupChatsButton.classList.add("btn-success")
+        this.groupChatsButton.classList.remove("btn-outline-success")
+        this.dmChatsContent.classList.add('collapse')
+        this.groupChatsContent.classList.remove('collapse')
+        this.disconnect(false, true);
+    }
+
+    toggleChats(event) {
+        if (event.target == this.dmChatsButton) {
+            this.setDMList();
         }
         if (event.target == this.groupChatsButton) {
-            this.dmChatsButton.classList.add("btn-outline-success")
-            this.dmChatsButton.classList.remove("btn-success")
-            this.groupChatsButton.classList.add("btn-success")
-            this.groupChatsButton.classList.remove("btn-outline-success")
-            this.dmChatsContent.classList.add('collapse')
-            this.groupChatsContent.classList.remove('collapse')
-            this.disconnect(false, true);
+            this.setGCList();
         }
     }
 
@@ -345,7 +360,7 @@ export default class Chat extends AbstractComponent {
                 this.gcUsersSelect.innerHTML += `<option value="${v.id}">${v.username}</option>`
             })
         }).catch(err=>{
-            console.log(err.message);
+            // console.log(err.message);
         })
     }
 
@@ -366,7 +381,7 @@ export default class Chat extends AbstractComponent {
         this.inviteButton = document.querySelector('#invite-button')
 
         this.chatModal.addEventListener('hidden.bs.modal', this.onHidden.bind(this))
-        this.chatModal.addEventListener('shown.bs.modal', this.onShown.bind(this))
+        this.chatModal.addEventListener('show.bs.modal', this.onShow.bind(this))
         this.sendButton.addEventListener('click', this.sendMessage.bind(this))
         this.dmChatsButton.addEventListener('click', this.toggleChats.bind(this))
         this.groupChatsButton.addEventListener('click', this.toggleChats.bind(this))
@@ -386,7 +401,7 @@ export default class Chat extends AbstractComponent {
                 "dm_user": Chat.dmUser,
                 "group_id": this.groupChatId,
                 "content": content,
-                "dm": this.dmMode,
+                "dm": Chat.dmMode,
                 "invitation": true,
             }));
             this.chatInput.value = "";
@@ -399,7 +414,6 @@ export default class Chat extends AbstractComponent {
 
     disconnect(switchDm, switchGroup) {
         if (this.socket && this.socket.readyState == this.socket.OPEN) {
-            console.log("discarded as always")
             this.socket.send(JSON.stringify({
                 type: "disconnect",
                 user: this.user.username,
@@ -476,7 +490,7 @@ export default class Chat extends AbstractComponent {
                             style="position: relative; height: 500px; overflow: auto; scroll-behavior: smooth">
                         </div>
                         <div class="text-muted d-flex justify-content-start align-items-center pe-3 pt-3 mt-2">
-                            <img src="https://mdbcdn.b-cdn.net/img/Photos/new-templates/bootstrap-chat/ava6-bg.webp"
+                            <img class="rounded rounded-6" src="${this.user.avatar ? `data:image/png;base64,${this.user.avatar}` : "/static/imgs/avatar_default.png"}""
                             alt="avatar 3" style="width: 40px; height: 100%;">
                             <input type="text" class="form-control form-control-lg" id="chat-input"
                             placeholder="Type message">

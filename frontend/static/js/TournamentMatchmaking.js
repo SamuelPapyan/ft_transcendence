@@ -50,7 +50,7 @@ export default class TournamentMatchmaking extends AbstractComponent{
     }
 
     async searchingForUsers() {
-        this.socket = new WebSocket('ws://localhost:8000/matchmaking/tournament')
+        this.socket = new WebSocket('ws://10.19.203.198:8000/matchmaking/tournament')
         this.socket.onopen = this.onOpen.bind(this);
         this.socket.onmessage = this.onMessage.bind(this);
         this.socket.onclose = this.onDisconnect.bind(this);

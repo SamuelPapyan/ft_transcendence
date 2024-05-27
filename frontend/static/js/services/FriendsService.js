@@ -1,7 +1,7 @@
 export default class FriendsService {
     static async getSentRequests(username) {
         return new Promise(function(resolve, reject) {
-            fetch(`http://localhost:8000/api/friends/sent/${username}`,{
+            fetch(`http://10.19.203.198:8000/api/friends/sent/${username}`,{
                 headers:{
                     'Authorization': `Bearer ${window.localStorage.getItem('token')}`
                 }
@@ -16,7 +16,7 @@ export default class FriendsService {
     
     static async sendFriendRequest(data) {
         return new Promise(function(resolve, reject) {
-            fetch(`http://localhost:8000/api/friends/send`,{
+            fetch(`http://10.19.203.198:8000/api/friends/send`,{
                 method: 'POST',
                 body: JSON.stringify(data),
                 headers:{
@@ -35,7 +35,7 @@ export default class FriendsService {
 
     static async acceptFriendRequest(data) {
         return new Promise(function(resolve, reject) {
-            fetch(`http://localhost:8000/api/friends/accept`,{
+            fetch(`http://10.19.203.198:8000/api/friends/accept`,{
                 method: 'POST',
                 body: JSON.stringify(data),
                 headers:{
@@ -54,7 +54,7 @@ export default class FriendsService {
     
     static async rejectFriendRequest(data) {
         return new Promise(function(resolve, reject) {
-            fetch(`http://localhost:8000/api/friends/reject`,{
+            fetch(`http://10.19.203.198:8000/api/friends/reject`,{
                 method: 'POST',
                 body: JSON.stringify(data),
                 headers:{
@@ -73,7 +73,7 @@ export default class FriendsService {
 
     static async removeFriend(data) {
         return new Promise(function(resolve, reject) {
-            fetch(`http://localhost:8000/api/friends/remove`,{
+            fetch(`http://10.19.203.198:8000/api/friends/remove`,{
                 method: 'DELETE',
                 body: JSON.stringify(data),
                 headers:{

@@ -271,7 +271,7 @@ export default class Chat extends AbstractComponent {
 
     onShow(){
         if (!this.socket) {
-            this.socket = new WebSocket('ws://localhost:8000/chat')
+            this.socket = new WebSocket('ws://10.19.203.198:8000/chat')
             this.socket.onopen = this.onConnect.bind(this);
             this.socket.onmessage = this.onMessage.bind(this);
             // this.socket.onclose = function() {

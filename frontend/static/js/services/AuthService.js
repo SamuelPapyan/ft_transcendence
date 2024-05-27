@@ -1,7 +1,7 @@
 export default class AuthService {
     static async login(data) {
         return new Promise(function(resolve, reject) {
-            fetch(`http://localhost:8000/api/token`, {
+            fetch(`http://10.19.203.198:8000/api/token`, {
                 method: 'POST',
                 body: JSON.stringify(data),
                 headers: {
@@ -19,7 +19,7 @@ export default class AuthService {
 
     static async getProfile() {
         return new Promise(function(resolve, reject) {
-            fetch(`http://localhost:8000/api/token`, {
+            fetch(`http://10.19.203.198:8000/api/token`, {
                 headers: {
                     'Accept': "application/json",
                     'Content-Type': "application/json",
@@ -35,7 +35,7 @@ export default class AuthService {
 
     static async set2FA(data) {
         return new Promise(function(resolve, reject) {
-            fetch(`http://localhost:8000/api/2fa`, {
+            fetch(`http://10.19.203.198:8000/api/2fa`, {
                 method: "PUT",
                 body: JSON.stringify(data),
                 headers: {
@@ -53,7 +53,7 @@ export default class AuthService {
 
     static async verify2FA(data) {
         return new Promise(function(resolve, reject) {
-            fetch(`http://localhost:8000/api/2fa/verify`, {
+            fetch(`http://10.19.203.198:8000/api/2fa/verify`, {
                 method: "PUT",
                 body: JSON.stringify(data),
                 headers: {
@@ -71,7 +71,7 @@ export default class AuthService {
 
     static async getLogin42Url() {
         return new Promise(function(resolve, reject) {
-            fetch(`http://localhost:8000/api/login42`).then(res=>{
+            fetch(`http://10.19.203.198:8000/api/login42`).then(res=>{
                 resolve(res.json());
             }).catch(err=>{
                 reject(err);
@@ -81,7 +81,7 @@ export default class AuthService {
 
     static async loginVia42(data) {
         return new Promise(function(resolve, reject) {
-            fetch(`http://localhost:8000/api/login42`, {
+            fetch(`http://10.19.203.198:8000/api/login42`, {
                 method: "POST",
                 body: JSON.stringify(data),
                 headers: {

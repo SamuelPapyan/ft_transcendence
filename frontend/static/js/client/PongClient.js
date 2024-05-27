@@ -14,7 +14,7 @@ class PongClient {
 
     async start(receive_func, disconnect_func, username) {
         this.user = username;
-        let url = `ws://localhost:8000/pong`;
+        let url = `ws://10.19.203.198:8000/pong`;
 
         this._socket = new WebSocket(url);
 

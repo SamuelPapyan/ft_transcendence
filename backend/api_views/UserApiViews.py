@@ -81,7 +81,7 @@ class UserApiViews:
 
         if data.is_valid():
             data.save()
-            return Response(data.data)
+            return Response(data.data, status=status.HTTP_200_OK)
         else:
             return Response(status=status.HTTP_404_NOT_FOUND)
         
@@ -97,7 +97,7 @@ class UserApiViews:
                 "email": user.email,
                 "avatar": user.avatar
             }
-            return Response(user_data)
+            return Response(user_data, status=status.HTTP_200_OK)
         else:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
@@ -108,7 +108,7 @@ class UserApiViews:
         if User.objects.filter(username=username).exists():
             item = User.objects.get(username=username)
             item.delete()
-            return Response(status=status.HTTP_202_ACCEPTED)
+            return Response(status=status.HTTP_200_OK)
         else:
             return Response(status=status.HTTP_404_NOT_FOUND)
         
@@ -185,7 +185,7 @@ class UserApiViews:
         data = request.data
         return Response({
             **data
-        }, status=status.HTTP_202_ACCEPTED)
+        }, status=status.HTTP_200_OK)
 
     @api_view(['PUT'])
     @permission_classes((permissions.IsAuthenticated, ))

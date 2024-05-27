@@ -55,4 +55,4 @@ class ChatApiViews:
             "success": True,
             "data": channel.id,
             "message": "DM Created Successfully",
-        }, status=status.HTTP_202_ACCEPTED)
+        }, status=status.HTTP_200_OK)

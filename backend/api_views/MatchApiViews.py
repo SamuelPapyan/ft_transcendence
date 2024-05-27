@@ -34,7 +34,7 @@ class MatchApiViews:
             "success": True,
             "data": res,
             "messages": "Ongoing Matches!"
-        })
+        }, status=status.HTTP_200_OK)
 
     @api_view(['GET'])
     @permission_classes((permissions.AllowAny,))

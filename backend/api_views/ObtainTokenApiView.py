@@ -22,7 +22,7 @@ class ObtainTokenView(views.APIView):
         username = serializer.validated_data.get('username')
         password = serializer.validated_data.get('password')
 
-        user = User.objects.filter(username=username).first()
+        user = User.objects.filter(username=username, is_42_user = False).first()
         if user is None or not user.check_password(password):
             return Response({
                 'success': False,
@@ -50,6 +50,6 @@ class ObtainTokenView(views.APIView):
                 raise AuthenticationFailed('Invalid signature')
             except:
                 raise ParseError()
-            return Response({'data': payload})
+            return Response({'data': payload}, status=status.HTTP_200_OK)
         else:
             return Response(status=status.HTTP_403_FORBIDDEN)

@@ -77,4 +77,4 @@ class User42ApiViews:
             user = get_user(user_data)
             return Response(
                 JWTAuthentication.create_jwt(user, True)
-                , status=status.HTTP_202_ACCEPTED)
+                , status=status.HTTP_200_OK)

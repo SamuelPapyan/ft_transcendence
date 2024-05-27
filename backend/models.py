@@ -22,6 +22,8 @@ class User(AbstractUser):
     country = models.CharField(max_length=120, null=True, blank=True)
     city = models.CharField(max_length=120, null=True, blank=True)
     two_factor = models.BooleanField(default=False)
+    is_42_user = models.BooleanField(default=False)
+    avatar = models.TextField(blank=True, null=True)
 
     def __str__(self) -> str:
         return self.username
@@ -52,12 +54,3 @@ class Channel(models.Model):
     messages = models.ManyToManyField(Message, default=[])
     is_dm = models.BooleanField(default=True)
     blocked = models.ManyToManyField(User, default=[], related_name='blocked_members')
-
-# class Chat(models.Model):
-#     chat_name = models.CharField(max_length=255)
-#     in_game = models.BooleanField(default=False)
-#     channels = models.ManyToManyField(Channel)
-
-# class DMChannel(Channel):
-#     user1 = models.ForeignKey(User, related_name='user1', on_delete=models.CASCADE)
-#     user2 = models.ForeignKey(User, related_name='user2', on_delete=models.CASCADE)

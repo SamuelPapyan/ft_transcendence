@@ -42,7 +42,7 @@ export default class Main extends AbstractPage {
         this.components['menu'].injectUser(this.user);
         this.components[this.page].injectUser(this.user);
         this.components['chat'].injectUser(this.user);
-        viewDataHelper(this.page).then(res=>{
+        viewDataHelper(this.page, this.user.username).then(res=>{
             if (res) {
                 const dataSet = {
                     menu: null,
@@ -53,12 +53,9 @@ export default class Main extends AbstractPage {
                 this.components['menu'].activateEventHandlers();
                 this.components[this.page].activateEventHandlers();
                 this.components['chat'].activateEventHandlers();
-            } else {
-                // console.log("Not OK.");
             }
         }).catch(err=>{
-            console.log(err.message);
-            console.log(err);
+            // console.log(err.message);
         })
     }
 

@@ -30,6 +30,7 @@ class JWTAuthentication(authentication.BaseAuthentication):
         user = User.objects.filter(username=username).first()
         if user is None:
             raise AuthenticationFailed('User not found')
+        payload["avatar"] = user.avatar
         
         return user, payload
 
@@ -37,13 +38,16 @@ class JWTAuthentication(authentication.BaseAuthentication):
         return 'Bearer'
     
     @classmethod
-    def create_jwt(cls, user):
+    def create_jwt(cls, user, log_in):
         payload = {
             'user_identifier': user.username,
             'exp': int((datetime.now() + timedelta(hours=1)).timestamp()),
             'iat': datetime.now().timestamp(),
             'username': user.username,
+            'email': user.email,
         }
+        if log_in and user.two_factor:
+            payload["two_factoring"] = True
         jwt_token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
         return jwt_token
     

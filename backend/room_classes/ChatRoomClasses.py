@@ -28,6 +28,7 @@ class ChatRoom(AbstractRoom):
                 "type": "send",
                 "date": m.date,
                 "sender": data["user"],
+                "avatar":m.sender.avatar,
                 "content": data["content"],
                 "dm_name": data["dm_user"],
                 "invitation": "invitation" in data
@@ -43,6 +44,7 @@ class ChatRoom(AbstractRoom):
                 "type": "send",
                 "date": m.date,
                 "sender": data["user"],
+                "avatar": m.sender.avatar,
                 "content": data["content"],
                 "group_id": data["group_id"]
             })

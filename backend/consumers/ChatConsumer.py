@@ -11,12 +11,10 @@ class ChatConsumer(WebsocketConsumer):
     room_manager = ChatRoomManager()
     
     def connect(self):
-        print("Chat Connect:", ChatConsumer.room_manager.rooms)
         self.accept()
     
     def receive(self, text_data=None, bytes_data=None):
         obj = json.loads(text_data)
-        print(obj)
         if obj["type"] == 'dms':
             dm_chats = []
             u = User.objects.get(username=obj["user"])
@@ -25,17 +23,20 @@ class ChatConsumer(WebsocketConsumer):
                 msgs = []
                 users = list(channel.users.get_queryset())
                 dm_name = users[0].username if users[0].username != obj["user"] else users[1].username
+                avatar = users[0].avatar if users[0].username != obj["user"] else users[1].avatar
                 messages = list(channel.messages.get_queryset())
                 for msg in messages:
                     msgs.append({
                         "sender": msg.sender.username,
+                        "avatar": msg.sender.avatar,
                         "content": msg.content,
                         "date": msg.date,
                         "invitation": msg.is_invitation
                     })
                 dm_chats.append({
                     "dm_name": dm_name,
-                    "messages": msgs
+                    "messages": msgs,
+                    "avatar": avatar
                 })
             self.send(text_data=json.dumps({
                 "type": "dms",
@@ -46,26 +47,26 @@ class ChatConsumer(WebsocketConsumer):
             group_chats = []
             u = User.objects.get(username=obj["user"])
             channels = list(Channel.objects.filter(Q(owner=u) | Q(users=u), is_dm = False).distinct())
-            print("Username:", obj["user"])
-            print("Channels: ", channels)
             for channel in channels:
                 msgs = []
                 group_chat_name = channel.channel_name
                 messages = list(channel.messages.get_queryset())
                 users = list(channel.users.get_queryset())
-                chat_users = {user.username: False for user in users}
+                chat_users = {user.username: {"blocked": False, "avatar": user.avatar} for user in users}
                 for msg in messages:
                     msgs.append({
                         "sender": msg.sender.username,
+                        "avatar": msg.sender.avatar,
                         "content": msg.content,
                         "date": msg.date
                     })
                 blocked = list(channel.blocked.get_queryset())
                 for member in users:
-                    chat_users[member.username] = member in blocked
+                    chat_users[member.username]["blocked"] = member in blocked
                 group_chats.append({
                     "chat_id": channel.id,
                     "chat_owner": channel.owner.username,
+                    "avatar": channel.owner.avatar,
                     "channel_name": group_chat_name,
                     "group_users": chat_users,
                     "messages": msgs
@@ -83,7 +84,6 @@ class ChatConsumer(WebsocketConsumer):
                     if room.get_member(obj["user"]) is None:
                         room.append(ChatMember(obj["user"], self))
                 else:
-                    print('Creating Room')
                     room = ChatRoom(dm=obj["dm"])
                     room.append(ChatMember(obj["user"], self))
                     ChatConsumer.room_manager.append(room)
@@ -96,7 +96,6 @@ class ChatConsumer(WebsocketConsumer):
                     if room.get_member(obj["user"]) is None:
                         room.append(ChatMember(obj["user"], self))
                 else:
-                    print('Creating Group Room')
                     room = ChatRoom(dm=False)
                     room.chat_id = obj["group_id"]
                     room.append(ChatMember(obj["user"], self))
@@ -142,8 +141,6 @@ class ChatConsumer(WebsocketConsumer):
             c.blocked.set(blocked)
             c.save()
             room: ChatRoom = ChatConsumer.room_manager.find_by_group_id(obj["group_id"])
-            print(room)
-            print(room.members)
             if room is not None:
                 room.broadcast({
                     **obj
@@ -152,4 +149,4 @@ class ChatConsumer(WebsocketConsumer):
 
                 
     def disconnect(self, code):
-        print("Disconnect from Chat")
+        pass

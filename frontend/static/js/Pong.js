@@ -149,7 +149,7 @@ export default class Pong extends AbstractComponent {
     }
 
     onDisconnect(event) {
-        console.log("Disconnected");
+        // console.log("Disconnected");
     }
 
     activateEventHandlers() {

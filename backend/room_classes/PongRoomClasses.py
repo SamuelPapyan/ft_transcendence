@@ -163,6 +163,16 @@ class PongRoom(AbstractRoom):
             if self.tournament:
                 self.get_next_round()
                 return True
+            else:
+                p1 = User.objects.get(username=self.ps[0])
+                p2 = User.objects.get(username=self.ps[1])
+                if Match.objects.filter(winner=p1, is_tournament=True).exists() and Match.objects.filter(winner=p2, is_tournament=True).exists():
+                    m1 = Match.objects.get(winner=p1, is_tournament=True)
+                    m2 = Match.objects.get(winner=p2, is_tournament=True)
+                    m1.is_tournament = False
+                    m2.is_tournament = False
+                    m1.save()
+                    m2.save()
             return self.tournament
         return False
 

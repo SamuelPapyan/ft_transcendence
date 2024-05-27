@@ -12,9 +12,17 @@ export default class Menu extends AbstractComponent{
         window.location.assign('/login')
     }
 
+    profileLinkOnClick(event) {
+        event.preventDefault();
+        history.pushState({username: this.user.username}, null, '/profile');
+        location.assign('/profile');
+    }
+
     activateEventHandlers() {
         const $logout = document.querySelector('#logout');
+        const profileLink = document.querySelector('#profile-link');
         $logout.addEventListener('click', this.logout);
+        profileLink.addEventListener('click', this.profileLinkOnClick.bind(this))
     }
 
     injectUser(user) {
@@ -47,7 +55,7 @@ export default class Menu extends AbstractComponent{
                     ${!this.user ? "???" : this.user.username}
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="navbarDropdown" style="z-index: 1021;">
-                    <li><a class="dropdown-item" href="/profile">My Profile</a></li>
+                    <li><a id="profile-link" class="dropdown-item" href="/profile">My Profile</a></li>
                     <li><a class="dropdown-item" href="/settings">Settings</a></li>
                     <li><hr class="dropdown-divider"></li>
                     <li><a class="dropdown-item" id="logout" href="/login">Logout</a></li>

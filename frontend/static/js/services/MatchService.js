@@ -19,7 +19,7 @@ export default class MatchService {
             ).then(res=>{
                 resolve(res.json());
             }).catch(err=>{
-                console.log(err.message);
+                // console.log(err.message);
                 reject(err);
             })
         })

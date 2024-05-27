@@ -19,6 +19,10 @@ const routes = {
         view: new Login("Login", true),
         protected: false,
     },
+    "/login/": {
+        view: new Login("Login", true),
+        protected: false,
+    },
     "/": {
         view: new Main("Home", "home"),
         protected: true,
@@ -27,7 +31,15 @@ const routes = {
         view: new SignUp("Sign Up", true),
         protected: false,
     },
+    "/signup/": {
+        view: new SignUp("Sign Up", true),
+        protected: false,
+    },
     "/profile": {
+        view: new Main("Profile", "profile"),
+        protected: true,
+    },
+    "/profile/": {
         view: new Main("Profile", "profile"),
         protected: true,
     },
@@ -35,7 +47,15 @@ const routes = {
         view: new Main("Settings", "settings"),
         protected: true,
     },
+    "/settings/": {
+        view: new Main("Settings", "settings"),
+        protected: true,
+    },
     "/users" : {
+        view: new Main("Users", "users"),
+        protected: true,
+    },
+    "/users/" : {
         view: new Main("Users", "users"),
         protected: true,
     },
@@ -43,7 +63,15 @@ const routes = {
         view: new Main("Matches", "matches"),
         protected: true,
     },
+    "/matches/" : {
+        view: new Main("Matches", "matches"),
+        protected: true,
+    },
     "/matchmaking" : { 
+        view: new Main("Matchmaking", "matchmaking"),
+        protected: true,
+    },
+    "/matchmaking/" : { 
         view: new Main("Matchmaking", "matchmaking"),
         protected: true,
     },
@@ -51,11 +79,23 @@ const routes = {
         view: new Main("Pong", "pong"),
         protected: true,
     },
+    "/pong/" : {
+        view: new Main("Pong", "pong"),
+        protected: true,
+    },
     "/matchmaking/tournament": {
         view: new Main("Tournament Making", "matchmaking-tournament"),
         protected: true,
     },
+    "/matchmaking/tournament/": {
+        view: new Main("Tournament Making", "matchmaking-tournament"),
+        protected: true,
+    },
     "/2fa": {
+        view: new TwoFactor("2FA authentication", true),
+        protected: false,
+    },
+    "/2fa/": {
         view: new TwoFactor("2FA authentication", true),
         protected: false,
     },

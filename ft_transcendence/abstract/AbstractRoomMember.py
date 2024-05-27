@@ -4,9 +4,10 @@ import json
 from django.core.serializers.json import DjangoJSONEncoder
 
 class AbstractRoomMember:
-    def __init__(self, username, socket) -> None:
+    def __init__(self, username, socket, avatar=None) -> None:
         self.username = username
         self.socket = socket
+        self.avatar = avatar
 
     def send(self, data):
         self.socket.send(text_data=json.dumps(data, cls=DjangoJSONEncoder))

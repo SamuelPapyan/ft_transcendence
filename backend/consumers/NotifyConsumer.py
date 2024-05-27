@@ -16,7 +16,6 @@ class NotifyConsumer(WebsocketConsumer):
 
     def receive(self, text_data):
         obj = json.loads(text_data)
-        print(obj)
         if obj["method"] == "connect":
             user = self.find_by_username(obj["user"])
             if user is None:
@@ -33,7 +32,7 @@ class NotifyConsumer(WebsocketConsumer):
                 NotifyConsumer.users.remove(user)
 
     def disconnect(self, code):
-        print("Disconnected from Notify")
+        pass
 
     def find_by_username(self, username):
         for user in NotifyConsumer.users:

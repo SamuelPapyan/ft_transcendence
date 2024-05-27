@@ -13,7 +13,6 @@ class PongClient {
     }
 
     async start(receive_func, disconnect_func, username) {
-        console.log("start pong");
         this.user = username;
         let url = `ws://localhost:8000/pong`;
 
@@ -58,14 +57,11 @@ class PongClient {
     }
 
     onclose(event) {
-        console.log(this.user, "closing with event handler")
-        console.log(event);
         this.stop();
         this.disconnect_func(event);
     }
 
     clientLeave() {
-        console.log(this.user, "pong client leaving");
         this._socket.send(JSON.stringify({
             "method": "disconnect",
             "user": this.user
@@ -73,7 +69,6 @@ class PongClient {
     }
 
     stop(){
-        console.log(this.user, "pong client stopping");
         if (this._socket)
             this._socket.close()
         this._socket = undefined;

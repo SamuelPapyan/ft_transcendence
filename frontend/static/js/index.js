@@ -4,6 +4,9 @@ import SignUp from "./SignUp.js";
 import Page404 from "./404.js";
 import AuthService from "./services/AuthService.js";
 import { Client } from "./client/Client.js";
+import TwoFactor from "./2fa.js";
+import verify42User, {getQueryParams} from "./42_api.js";
+import MatchService from "./services/MatchService.js";
 
 let client = new Client(location.origin);
 
@@ -52,6 +55,10 @@ const routes = {
         view: new Main("Tournament Making", "matchmaking-tournament"),
         protected: true,
     },
+    "/2fa": {
+        view: new TwoFactor("2FA authentication", true),
+        protected: false,
+    },
     404: {
         view: new Page404("Page not found"),
     }
@@ -69,21 +76,40 @@ const route = (event) => {
 export function handleLocation() {
     const path = window.location.pathname;
     if (window.localStorage.getItem("token")) {
-        AuthService.getProfile().then(res=>{
+        AuthService.getProfile().then(async(res)=>{
             if (res.data) {
-                if (routes[path]) {
-                    if (routes[path].protected) {
-                        routes[path].view.update(master, {
+                if (res.data.two_factoring && path != "/2fa") {
+                    window.history.replaceState(null, null, '/2fa');
+                    window.location.reload();
+                } else {
+                    if (routes[path]) {
+                        if (path == "/2fa" && res.data.two_factoring) {
+                            routes["/2fa"].view.update(master, {
+                                user: res.data
+                            });
+                        }
+                        else if (routes[path].protected) {
+                            const hasMatch = (await MatchService.hasOngoinMatch(res.data.username)).data;
+                            if (path == '/pong' && !hasMatch) {
+                                window.history.replaceState(null, null, '/matchmaking');
+                                window.location.reload();
+                            } else if (['/matchmaking', '/matchmaking/tournament'].includes(path) && hasMatch) {
+                                window.history.replaceState(null, null, '/pong');
+                                window.location.reload();
+                            } else {
+                                routes[path].view.update(master, {
+                                    user: res.data
+                                });
+                            }
+                        } else {
+                            window.history.replaceState(null, null, '/');
+                            window.location.reload();
+                        }
+                    } else {
+                        routes[404].view.update(master, {
                             user: res.data
                         });
-                    } else {
-                        window.history.replaceState(null, null, '/');
-                        window.location.reload();
                     }
-                } else {
-                    routes[404].view.update(master, {
-                        user: res.data
-                    });
                 }
             } else {
                 if (window.localStorage.getItem("token")) {
@@ -93,13 +119,14 @@ export function handleLocation() {
                 }
             }
         }).catch((err)=>{
-            console.log(err.message);
-            console.log(err);
+            // console.log(err.message);
         })
     } else {
         if (routes[path]) {
-            if (!routes[path].protected) {
+            if (!routes[path].protected && path !== '/2fa') {
                 routes[path].view.render(master);
+            } else if (path == '/' && Object.keys(getQueryParams()).length) {
+                verify42User();
             } else {
                 window.history.replaceState(null, null, '/login');
                 window.location.reload();

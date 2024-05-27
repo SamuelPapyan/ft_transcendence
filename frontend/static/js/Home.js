@@ -18,7 +18,7 @@ export default class Home extends AbstractComponent {
                 }
             }
         }).catch(err=>{
-            console.log(err.message);
+            // console.log(err.message);
         })
     }
 

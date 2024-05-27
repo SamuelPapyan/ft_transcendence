@@ -16,14 +16,13 @@ class ObtainTokenView(views.APIView):
     serializer_class = ObtainTokenSerializer
 
     def post(self, request, *args, **kwargs):
-        print(request.data)
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         username = serializer.validated_data.get('username')
         password = serializer.validated_data.get('password')
 
-        user = User.objects.filter(username=username).first()
+        user = User.objects.filter(username=username, is_42_user = False).first()
         if user is None or not user.check_password(password):
             return Response({
                 'success': False,
@@ -31,7 +30,7 @@ class ObtainTokenView(views.APIView):
                 'message': 'Invalid credentials'
             }, status=status.HTTP_400_BAD_REQUEST)
         
-        jwt_token = JWTAuthentication.create_jwt(user)
+        jwt_token = JWTAuthentication.create_jwt(user, True)
 
         return Response({
             'success': True,
@@ -45,10 +44,12 @@ class ObtainTokenView(views.APIView):
             token = token.split(' ')[1]
             try:
                 payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+                user = User.objects.get(username=payload["username"])
+                payload["avatar"] = user.avatar
             except jwt.exceptions.InvalidSignatureError:
                 raise AuthenticationFailed('Invalid signature')
             except:
                 raise ParseError()
-            return Response({'data': payload})
+            return Response({'data': payload}, status=status.HTTP_200_OK)
         else:
             return Response(status=status.HTTP_403_FORBIDDEN)

@@ -10,9 +10,12 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
-# import os
+import os
 from pathlib import Path
 from datetime import timedelta
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -97,11 +100,11 @@ ASGI_APPLICATION = 'ft_transcendence.asgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'transcendence_db',
-        'USER': 'postgres',
-        'PASSWORD': 'postgres123',
-        'HOST': 'postgres',
-        'PORT': '5432',
+        'NAME': os.getenv('POSTGRES_DB_NAME'),
+        'USER': os.getenv('POSTGRES_DB_USER'),
+        'PASSWORD': os.getenv('POSTGRES_DB_PASSWORD'),
+        'HOST': os.getenv('POSTGRES_DB_HOST'),
+        'PORT': os.getenv('POSTGRES_DB_PORT'),
     }
 }
 

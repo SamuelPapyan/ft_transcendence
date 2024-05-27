@@ -16,7 +16,7 @@ export default class SignUp extends Login {
             }
             
         }).catch(err=>{
-            console.log(err.message);
+            // console.log(err.message);
         })
     }
 

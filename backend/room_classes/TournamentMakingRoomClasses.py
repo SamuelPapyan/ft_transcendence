@@ -19,6 +19,8 @@ class WaitingRoom(AbstractRoom):
                 "user": waiter.username,
             })
             return True
+        user = User.objects.get(username=waiter.username)
+        waiter.avatar = user.avatar
         self.members.append(waiter)
         return False
     

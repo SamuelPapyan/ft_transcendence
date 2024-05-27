@@ -5,12 +5,10 @@ from backend.room_classes.MatchMakingRoomClasses import Waiter, WaitingRoom, Wai
 class MatchMakingConsumer(WebsocketConsumer):
     room_manager = WaitingRoomManager()
     def connect(self):
-        print("Connect: ", MatchMakingConsumer.room_manager.rooms)
         self.accept()
 
     def receive(self, text_data=None, bytes_data=None):
         obj = json.loads(text_data)
-        print(obj)
         if obj["method"] == 'connect':
             room: WaitingRoom = MatchMakingConsumer.room_manager.get()
             if room is not None and len(room) < 2:
@@ -23,14 +21,16 @@ class MatchMakingConsumer(WebsocketConsumer):
                 MatchMakingConsumer.room_manager.append(room)
             room.broadcast({
                 **obj,
-                "members": room.usernames()
+                "members": room.usernames(),
+                "avatars": room.avatars()
             })
         elif obj["method"] == 'add':
             room: WaitingRoom = MatchMakingConsumer.room_manager.find_by_username(obj["user"])
             room.create_match()
             room.broadcast({
                 **obj,
-                "members": room.usernames()
+                "members": room.usernames(),
+                "avatars": room.avatars()
             })
         elif obj["method"] == 'disconnect':
             room: WaitingRoom = MatchMakingConsumer.room_manager.find_by_username(obj["user"])
@@ -38,12 +38,11 @@ class MatchMakingConsumer(WebsocketConsumer):
             room.remove(mem)
             room.broadcast({
                 **obj,
-                "members": room.usernames()
+                "members": room.usernames(),
+                "avatars": room.avatars()
             })
             if room.empty():
                 MatchMakingConsumer.room_manager.remove(room)
 
     def disconnect(self, close_code):
-        print("Disconnect")
-        print("Disconnect: ", MatchMakingConsumer.room_manager.rooms)
-        # Called when the socket closes
+        pass

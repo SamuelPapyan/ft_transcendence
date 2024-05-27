@@ -21,14 +21,16 @@ class TournamentMakingConsumer(WebsocketConsumer):
                 TournamentMakingConsumer.room_manager.append(room)
             room.broadcast({
                 **obj,
-                "members": room.usernames()
+                "members": room.usernames(),
+                "avatars": room.avatars()
             })
         elif obj["method"] == 'start':
             room: WaitingRoom = TournamentMakingConsumer.room_manager.find_by_username(obj["user"])
             room.create_tournament()
             room.broadcast({
                 **obj,
-                "members": room.usernames()
+                "members": room.usernames(),
+                "avatars": room.avatars()
             })
             TournamentMakingConsumer.room_manager.remove(room)
         elif obj["method"] == "disconnect":
@@ -38,10 +40,11 @@ class TournamentMakingConsumer(WebsocketConsumer):
                 room.remove(mem)
                 room.broadcast({
                     **obj,
-                    "members": room.usernames()
+                    "members": room.usernames(),
+                    "avatars": room.avatars()
                 })
                 if room.empty():
                     TournamentMakingConsumer.room_manager.remove(room)
 
     def disconnect(self, code):
-        print("Disconnect")
+        pass
